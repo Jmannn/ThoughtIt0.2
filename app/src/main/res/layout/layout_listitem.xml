@@ -5,7 +5,16 @@
     android:id="@+id/parent_layout">
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="16dp"
+        android:text="Datesdfsdfsdfsdfsdkfskdfsjsdfhsdfksdfjsdfhsdfksdfjsdfhsdfksdfjsdfhsdfksdfjsdfhsdfk"
+        android:textSize="12dp"
+        android:id="@+id/date"
+        android:background="@color/colorPrimary">
+    </TextView>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/date"
         android:text="big old didf dfjsdf sdfsdfsldfjsdfhsdf "
         android:id="@+id/thought"
         android:background="@color/colorPrimary">

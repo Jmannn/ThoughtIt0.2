@@ -41,6 +41,7 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
     public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
         Log.d(TAG, "onBindViewHolder: called.");
         holder.thought.setText(mThoughts.get(position));
+        holder.date.setText("Date of Thought: "+mDates.get(position).toString());
         holder.parentLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -57,10 +58,12 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
 
     public class ViewHolder extends RecyclerView.ViewHolder{
         TextView thought;
+        TextView date;
         RelativeLayout parentLayout;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             this.thought = itemView.findViewById(R.id.thought);
+            this.date = itemView.findViewById(R.id.date);
             this.parentLayout = itemView.findViewById(R.id.parent_layout);
         }
     }

@@ -30,8 +30,8 @@ public class MainActivity extends AppCompatActivity {
         String str = "";
         for (int i = 0; i < 10; i++) {
             str = "This is the news " + i + " " + i * i;
-            str += " sdfsdfsdfsdfkjsdf;kajdhfk;djfgs;dkjfgnsd;fk;kgndsfg;sdnfg;sjndfg;jsndfg;jnsfg;jnsdfg;sdfg;sdfg;kjsdfgkj";
-            str += "dfasdfhasdfkjsdflkjhasdflkjhasddflkjhasdf";
+            str += " 123478912347891234789123478912347891234789123478912347891234789";
+            str += "AS you can see i know a lot about cars trucks";
             dates.add(new Date());
             thoughts.add(str);
         }
