@@ -30,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
         String str = "";
         for (int i = 0; i < 10; i++) {
             str = "This is the news " + i + " " + i * i;
+            str += " sdfsdfsdfsdfkjsdf;kajdhfk;djfgs;dkjfgnsd;fk;kgndsfg;sdnfg;sjndfg;jsndfg;jnsfg;jnsdfg;sdfg;sdfg;kjsdfgkj";
+            str += "dfasdfhasdfkjsdflkjhasdflkjhasddflkjhasdf";
             dates.add(new Date());
             thoughts.add(str);
         }
@@ -41,5 +43,6 @@ public class MainActivity extends AppCompatActivity {
         RecyclerViewAdaptor adaptor = new RecyclerViewAdaptor(this, thoughts, dates);
         recyclerView.setAdapter(adaptor);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.hasFixedSize();
     }
 }
