@@ -94,9 +94,13 @@ public class MainActivity extends AppCompatActivity{
         this.recyclerView.scrollToPosition(this.thoughts.size()-1);
 
     }
+    public void removeThought(int pos){
+        Log.d(TAG, "removeThought : pos "+pos);
+        this.thoughts.remove(pos);
+        this.adaptor.notifyItemRemoved(pos);
+    }
 }
 //TODO: Only display the thoughts of each day.
-//TODO: Have a toolbar drop down that can choose the date to display
-// but if the dates dont match you cant add, maybe hide components
-// multiple drop downs which have columns for year, month and day
-//TODO: Have a double tap remove and reverse button for the last one
+//TODO: Have a calander, select date, execute local db query
+//TODO: On open, have little quite sound effect. One that a user can turn off
+//TODO: So a calander and a menu

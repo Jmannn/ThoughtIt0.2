@@ -1,5 +1,6 @@
 package com.example.thoughtit02;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,6 +24,7 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
     private List<Date> mDates = new ArrayList<>();
     private Context mContext;
 
+
     public RecyclerViewAdaptor(Context mContext, List<String> mThoughts, List<Date> mDates) {
         this.mThoughts = mThoughts;
         this.mDates = mDates;
@@ -42,13 +44,8 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
         Log.d(TAG, "onBindViewHolder: called.");
         holder.thought.setText(mThoughts.get(position));
         holder.date.setText("Date of Thought: "+mDates.get(position).toString());
-        holder.parentLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "onClick: clicked on: " +mThoughts.get(position));
-                Toast.makeText(mContext, "Date of Thought: "+mDates.get(position).toString(), Toast.LENGTH_SHORT).show();
-            }
-        });
+
+
     }
 
     @Override
@@ -65,6 +62,30 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
             this.thought = itemView.findViewById(R.id.thought);
             this.date = itemView.findViewById(R.id.date);
             this.parentLayout = itemView.findViewById(R.id.parent_layout);
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    // TODO Auto-generated method
+                    Log.d("DEBUG", "pos "+ getAdapterPosition() + " getItemId ");
+                    Toast.makeText(mContext, "Removed "+mThoughts.get(getAdapterPosition())+" p:"+ getAdapterPosition()
+                            , Toast.LENGTH_SHORT).show();
+                    // Here we can use to show dialog.
+                    ((MainActivity)mContext).removeThought(getAdapterPosition());
+
+                    return true;
+                }
+
+            });
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // TODO Auto-generated method
+                    Log.d("DEBUG", "pos "+ getAdapterPosition() + " getItemId ");
+                    Toast.makeText(mContext, "To remove item. Long press the " +
+                            "thought to remove.", Toast.LENGTH_SHORT).show();
+
+                }
+            });
         }
     }
 }
