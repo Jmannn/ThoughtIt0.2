@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/select_date_range"
+        android:title="@string/display_date_range"
+        ></item>
+    <item
+        android:id="@+id/set_current_date"
+        android:title="@string/show_recent"
+        ></item>
+</menu>
