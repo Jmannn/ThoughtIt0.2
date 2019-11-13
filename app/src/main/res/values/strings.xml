@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ThoughtIt0.2</string>
+    <string name="app_name">Thought It</string>
     <string name="display_date_range">Display Date Range</string>
     <string name="show_recent">Show Recent</string>
     <string name="please_select_two_dates_the_latter_date_is_not_inclusive">Please select two dates. The latter date is not inclusive</string>

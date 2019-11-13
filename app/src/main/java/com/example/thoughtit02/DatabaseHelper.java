@@ -62,4 +62,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             return true;
         }
     }
+    public Cursor searchData(String searchStr){
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "Select * from "+TABLE_NAME+" where "+ COL2 +" like '%"+searchStr+"%'";
+        Log.d("DEBUG", query);
+        Cursor data = db.rawQuery(query, null);
+        return data;
+
+    }
 }

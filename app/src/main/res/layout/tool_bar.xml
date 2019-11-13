@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/colorPrimary"
+
+    android:elevation="4dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <EditText
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:layout_toLeftOf="@+id/image_srch_bttn"
+        android:hint="Search thoughts"
+        android:id="@+id/search_bar"
+        android:inputType="textCapSentences"
+        android:background="@drawable/rounded_edit_box"
+        android:layout_marginVertical="5dp"
+        android:paddingHorizontal="4dp"
+        >
+
+    </EditText>
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:id="@+id/image_srch_bttn"
+        android:onClick="searchThought"
+        android:text=""
+        android:src="@drawable/ic_action_seach"
+        android:layout_alignParentRight="true"
+
+        />
+    </LinearLayout>
+
+
+</androidx.appcompat.widget.Toolbar>

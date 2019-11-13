@@ -1,6 +1,7 @@
 package com.example.thoughtit02;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -8,7 +9,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -18,17 +18,10 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.zip.Inflater;
 
 public class MainActivity extends AppCompatActivity{
     private static final String TAG = "MainActivity";
@@ -46,12 +39,14 @@ public class MainActivity extends AppCompatActivity{
     private Date currentMaxDate;
     //only used for checking if the first date has been picked
     private boolean selectMaxDate = false;
-
+    private Toolbar toolbar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.d(TAG, "onCreate start");
+        toolbar = (Toolbar) findViewById(R.id.tool_bar);
+        setSupportActionBar(toolbar);
         sharedPreferences = getSharedPreferences("USER", MODE_PRIVATE);
         this.mDatabaseHelper = new DatabaseHelper(this);
         this.currentMinDate = getYesterday();
@@ -81,6 +76,9 @@ public class MainActivity extends AppCompatActivity{
             }
             case R.id.set_current_date:{
                 Log.d("DEBUG", "set to currentdate");
+                getDataInRange(getYesterday(), new Date());
+                this.adaptor.notifyDataSetChanged();
+                this.recyclerView.scrollToPosition(this.thoughts.size()-1);
                 break;
             }
         }
@@ -97,8 +95,8 @@ public class MainActivity extends AppCompatActivity{
                     this.selectMaxDate = false;
                     this.currentMaxDate = new Date(result);
                     Log.d("DEBUG", "++"+this.currentMaxDate.toString());
-                    getData(this.currentMinDate, this.currentMaxDate);
-                    this.adaptor.notifyDataSetChanged();
+                    getDataInRange(this.currentMinDate, this.currentMaxDate);
+
 
                 } else {
                     this.selectMaxDate = true;
@@ -133,7 +131,7 @@ public class MainActivity extends AppCompatActivity{
 
         /////////////////////////////Heree
 
-        getData(this.currentMinDate, this.currentMaxDate);
+        getDataInRange(this.currentMinDate, this.currentMaxDate);
 
         ///..........................DB QUERY FROM STart of yesterday
 
@@ -159,7 +157,10 @@ public class MainActivity extends AppCompatActivity{
     public void saveThought(View view){
         Log.d(TAG,"saveThought");
         Date date = new Date();
+
         String thought = this.textBox.getText().toString();
+        if(thought.isEmpty()) return;
+
         this.thoughts.add(thought);
         this.textBox.setText("");
         this.dates.add(date);
@@ -174,8 +175,17 @@ public class MainActivity extends AppCompatActivity{
         }
 
     }
+
+    public void searchThought(View view){
+        //Search button
+        EditText editText = findViewById(R.id.search_bar);
+        String searchStr = editText.getText().toString();
+        editText.setText("");
+        displayData(mDatabaseHelper.searchData(searchStr));
+
+    }
     //TODO: this will have a range
-    public void getData(Date lower, Date upperBound){
+    public void getDataInRange(Date lower, Date upperBound){
         long lowerBound;
         Calendar cal = Calendar.getInstance();
         cal.setTime(lower);
@@ -189,12 +199,18 @@ public class MainActivity extends AppCompatActivity{
         cal.set(Calendar.HOUR, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
-        Cursor cursor = mDatabaseHelper.getData(lowerBound, cal.getTimeInMillis());
+        displayData(mDatabaseHelper.getData(lowerBound, cal.getTimeInMillis()));
+    }
+    private void displayData(Cursor cursor){
         this.dates.clear();
         this.thoughts.clear();
         while(cursor.moveToNext()){
             this.dates.add(new Date(cursor.getLong(0)));
             this.thoughts.add(cursor.getString(1));
+        }
+        if(this.adaptor != null) {
+            this.adaptor.notifyDataSetChanged();
+            this.recyclerView.scrollToPosition(this.thoughts.size() - 1);
         }
     }
     public void removeThought(int pos){
@@ -209,12 +225,20 @@ public class MainActivity extends AppCompatActivity{
             toastMessage("'"+thoughts.get(pos) + "' could not be removed.");
         }
     }
+
     private void toastMessage(String text){
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
+    /* This method brings up a menu containing options regarding input
+     * such as image, video, audio. Responds to a '+' button click.
+     * @param the view object
+     */
+    public void thoughtOptions(View view) {
+    }
 }
-//TODO: Have a calander, select date, execute local db query
 //TODO: On open, have little quite sound effect. One that a user can turn off
-//TODO: So a calander and a menu
-//TODO: Notify dataset changed
-//TODO: Have Button go back to today
+//TODO: A search function
+//TODO: Highlight notes
+//TODO: image with caption, a plus button that with a menu that allows you to attach images
+//TODO: Should the search be a button on the side or its own view
+//TODO: How about a button in the toolbar that triggers a search dialog
