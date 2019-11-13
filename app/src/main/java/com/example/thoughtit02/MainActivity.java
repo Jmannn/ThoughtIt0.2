@@ -16,6 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public class MainActivity extends AppCompatActivity{
     private List<String> thoughts = new ArrayList<>();
     private List<Date> dates = new ArrayList<>();
     private RecyclerViewAdaptor adaptor;
-    private EditText textBox;
+    private EditText editBox;
     private RecyclerView recyclerView;
     private SharedPreferences sharedPreferences;
     private final String dateKey = "Dates";
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity{
         this.currentMinDate = getYesterday();
         this.currentMaxDate = new Date();
         initThoughts();
-        this.textBox = findViewById(R.id.text_enter);
+        this.editBox = findViewById(R.id.text_enter);
     }
 
     @Override
@@ -113,17 +114,6 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        Log.d(TAG, "- ON PAUSE -");
-        //
-    }
-    @Override
-    public void onStop() {
-        super.onStop();
-        Log.d(TAG, "- ON STOP -");
-    }
     //use this for model loading of prev thoughts empty on first open
     private void initThoughts(){
         Log.d(TAG, "Creating thoughts");
@@ -158,11 +148,11 @@ public class MainActivity extends AppCompatActivity{
         Log.d(TAG,"saveThought");
         Date date = new Date();
 
-        String thought = this.textBox.getText().toString();
+        String thought = this.editBox.getText().toString();
         if(thought.isEmpty()) return;
 
         this.thoughts.add(thought);
-        this.textBox.setText("");
+        this.editBox.setText("");
         this.dates.add(date);
         this.adaptor.notifyItemInserted(this.thoughts.size()-1);
         this.recyclerView.scrollToPosition(this.thoughts.size()-1);
@@ -234,11 +224,30 @@ public class MainActivity extends AppCompatActivity{
      * @param the view object
      */
     public void thoughtOptions(View view) {
+        Log.d("DEBUG", "thoughtOptions");
+        View v = findViewById(R.id.thought_options);
+        PopupMenu pm = new PopupMenu(MainActivity.this, v);
+        pm.getMenuInflater().inflate(R.menu.input_options, pm.getMenu());
+        pm.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()){
+                    case R.id.clear_input:
+                        editBox.setText("");
+                        break;
+                    case R.id.add_photo:
+                        break;
+                }
+
+                return true;
+            }
+        });
+        pm.show();
     }
 }
-//TODO: On open, have little quite sound effect. One that a user can turn off
-//TODO: A search function
+
 //TODO: Highlight notes
 //TODO: image with caption, a plus button that with a menu that allows you to attach images
-//TODO: Should the search be a button on the side or its own view
-//TODO: How about a button in the toolbar that triggers a search dialog
+//TODO: Use context menu, hold press on each recycle view item
+//TODO: Swipe left to remove something in recycle view
+//TODO: + button should have menu, after that a clear button
