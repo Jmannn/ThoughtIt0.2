@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
@@ -12,6 +13,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,6 +25,11 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
     private static final String TAG = "RecyclerViewAdaptor";
     private List<String> mThoughts = new ArrayList<>();
     private List<Date> mDates = new ArrayList<>();
+
+    public Context getContext() {
+        return mContext;
+    }
+
     private Context mContext;
 
 
@@ -47,6 +55,19 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
 
 
     }
+    public void removeItem(int position){
+        Toast.makeText(mContext, "Removed "+mThoughts.get(position)
+                , Toast.LENGTH_SHORT).show();
+        ((MainActivity)mContext).removeThought(position);
+
+    }
+
+    public List<String> getData() {
+        return mThoughts;
+    }
+    public List<Date> getDates() {
+        return mDates;
+    }
 
     @Override
     public int getItemCount() {
@@ -67,10 +88,7 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
                 public boolean onLongClick(View v) {
                     // TODO Auto-generated method
                     Log.d("DEBUG", "pos "+ getAdapterPosition() + " getItemId ");
-                    Toast.makeText(mContext, "Removed "+mThoughts.get(getAdapterPosition())+" p:"+ getAdapterPosition()
-                            , Toast.LENGTH_SHORT).show();
-                    // Here we can use to show dialog.
-                    ((MainActivity)mContext).removeThought(getAdapterPosition());
+
 
                     return true;
                 }
@@ -81,8 +99,8 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
                 public void onClick(View v) {
                     // TODO Auto-generated method
                     Log.d("DEBUG", "pos "+ getAdapterPosition() + " getItemId ");
-                    Toast.makeText(mContext, "To remove item. Long press the " +
-                            "thought to remove.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mContext, "To remove item swipe horizontally. Long press the " +
+                            "thought to bring up options", Toast.LENGTH_SHORT).show();
 
                 }
             });
