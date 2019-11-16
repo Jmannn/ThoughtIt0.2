@@ -8,4 +8,8 @@
         android:id="@+id/set_current_date"
         android:title="@string/show_recent"
         ></item>
+    <item
+        android:id="@+id/clear"
+        android:title="clear records"
+        ></item>
 </menu>

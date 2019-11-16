@@ -2,6 +2,8 @@ package com.example.thoughtit02;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,6 +21,8 @@ import android.widget.EditText;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
+import com.google.android.material.snackbar.Snackbar;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -30,6 +34,8 @@ public class MainActivity extends AppCompatActivity{
     DatabaseHelper mDatabaseHelper;
     private List<String> thoughts = new ArrayList<>();
     private List<Date> dates = new ArrayList<>();
+    private List<String> type = new ArrayList<>();
+    private List<String> url = new ArrayList<>();
     private RecyclerViewAdaptor adaptor;
     private EditText editBox;
     private RecyclerView recyclerView;
@@ -41,6 +47,11 @@ public class MainActivity extends AppCompatActivity{
     //only used for checking if the first date has been picked
     private boolean selectMaxDate = false;
     private Toolbar toolbar;
+    private Activity activity = (MainActivity.this);
+    private ConstraintLayout constraintLayout;
+    protected int redoPosition;
+    protected String redoThought;
+    protected Date redoDate;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +65,7 @@ public class MainActivity extends AppCompatActivity{
         this.currentMaxDate = new Date();
         initThoughts();
         this.editBox = findViewById(R.id.text_enter);
+        this.constraintLayout = findViewById(R.id.constraint_layout);
     }
 
     @Override
@@ -66,6 +78,7 @@ public class MainActivity extends AppCompatActivity{
         Intent intent = new Intent(MainActivity.this, CalendarActivity.class);
         startActivityForResult(intent, 1);
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -81,6 +94,9 @@ public class MainActivity extends AppCompatActivity{
                 this.adaptor.notifyDataSetChanged();
                 this.recyclerView.scrollToPosition(this.thoughts.size()-1);
                 break;
+            }
+            case R.id.clear:{
+                mDatabaseHelper.clearDatabase();
             }
         }
         return super.onOptionsItemSelected(item);
@@ -143,6 +159,9 @@ public class MainActivity extends AppCompatActivity{
         recyclerView.setAdapter(adaptor);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.hasFixedSize();
+        ItemTouchHelper itemTouchHelper = new
+                ItemTouchHelper(new SwipeToDeleteCallback(this.adaptor));
+        itemTouchHelper.attachToRecyclerView(recyclerView);
     }
     public void saveThought(View view){
         Log.d(TAG,"saveThought");
@@ -156,7 +175,7 @@ public class MainActivity extends AppCompatActivity{
         this.dates.add(date);
         this.adaptor.notifyItemInserted(this.thoughts.size()-1);
         this.recyclerView.scrollToPosition(this.thoughts.size()-1);
-        boolean insertData = mDatabaseHelper.addData(date.getTime(),thought);
+        boolean insertData = mDatabaseHelper.addData(date.getTime(),thought,"Text","");
 
         if(insertData ==false){
             toastMessage("Could not insert thought.");
@@ -194,9 +213,13 @@ public class MainActivity extends AppCompatActivity{
     private void displayData(Cursor cursor){
         this.dates.clear();
         this.thoughts.clear();
+        this.type.clear();
+        this.url.clear();
         while(cursor.moveToNext()){
             this.dates.add(new Date(cursor.getLong(0)));
             this.thoughts.add(cursor.getString(1));
+            this.type.add(cursor.getString(2));
+            this.url.add(cursor.getString(3));
         }
         if(this.adaptor != null) {
             this.adaptor.notifyDataSetChanged();
@@ -204,19 +227,39 @@ public class MainActivity extends AppCompatActivity{
         }
     }
     public void removeThought(int pos){
-        Log.d(TAG, "removeThought : pos "+pos);
         boolean result = mDatabaseHelper.removeDatum(this.dates.get(pos).getTime());
 
         if(result){
+            this.redoThought = this.thoughts.get(pos);
+            this.redoDate = this.dates.get(pos);
+            this.redoPosition = pos;
+
             this.thoughts.remove(pos);
             this.dates.remove(pos);
             this.adaptor.notifyItemRemoved(pos);
+            final Snackbar snackbar = Snackbar.make(constraintLayout, "Removed: " + this.redoThought, Snackbar.LENGTH_LONG)
+                    .setAction("UNDO", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            redo();
+                        }
+                    });
+            snackbar.show();
         } else {
             toastMessage("'"+thoughts.get(pos) + "' could not be removed.");
         }
+
+    }
+    public void redo(){
+        this.thoughts.add(this.redoPosition,this.redoThought);
+        this.dates.add(this.redoPosition,this.redoDate);
+        this.adaptor.notifyItemInserted(this.redoPosition);
+        this.recyclerView.scrollToPosition(this.thoughts.size()-1);
+        Snackbar snackbar = Snackbar.make(constraintLayout, "Undo Success",Snackbar.LENGTH_SHORT);
+        snackbar.show();
     }
 
-    private void toastMessage(String text){
+    public void toastMessage(String text){
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
     /* This method brings up a menu containing options regarding input
@@ -237,6 +280,9 @@ public class MainActivity extends AppCompatActivity{
                         break;
                     case R.id.add_photo:
                         break;
+                    case R.id.redo:
+                        redo();
+                        break;
                 }
 
                 return true;
@@ -244,10 +290,11 @@ public class MainActivity extends AppCompatActivity{
         });
         pm.show();
     }
+    public void updateThought(int position, EditText editText){
+        this.thoughts.set(position, editText.getText().toString());
+    }
 }
 
 //TODO: Highlight notes
 //TODO: image with caption, a plus button that with a menu that allows you to attach images
-//TODO: Use context menu, hold press on each recycle view item
-//TODO: Swipe left to remove something in recycle view
-//TODO: + button should have menu, after that a clear button
+

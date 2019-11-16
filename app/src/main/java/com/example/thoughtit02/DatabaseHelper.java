@@ -10,9 +10,11 @@ import android.util.Log;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "DatabaseHelper";
-    private static final String TABLE_NAME = "thoughts_table";
+    private static final String TABLE_NAME = "thought_table";
     public static final String COL1 = "date_ms";
     public static final String COL2 = "thought";
+    public static final String COL3 = "type";
+    public static final String COL4 = "url";
 
     public DatabaseHelper(Context context){
         super(context,TABLE_NAME,null,1);
@@ -21,20 +23,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String createTable = "CREATE TABLE "+TABLE_NAME+ " ("+COL1+" INTEGER PRIMARY KEY " +
-                "AUTOINCREMENT, " + COL2 + " TEXT)";
+                "AUTOINCREMENT, " + COL2 + " TEXT,"+ COL3 + " TEXT,"+ COL4 + " TEXT)";
         db.execSQL(createTable);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+
         db.execSQL("DROP TABLE IF EXISTS " +TABLE_NAME);
         onCreate(db);
     }
-    public boolean addData(Long date, String thought){
+    public void clearDatabase() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String clearDBQuery = "DELETE FROM "+TABLE_NAME;
+        db.delete(TABLE_NAME, null, null);
+        db.execSQL(clearDBQuery);
+    }
+    public boolean addData(Long date, String thought, String type, String url){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(COL1, date);
         contentValues.put(COL2, thought);
+        contentValues.put(COL3, type);
+        contentValues.put(COL4, url);
         Log.d(TAG, "addData: adding "+thought+" to table: "+TABLE_NAME);
         long result = db.insert(TABLE_NAME, null, contentValues);
         if(result == -1){

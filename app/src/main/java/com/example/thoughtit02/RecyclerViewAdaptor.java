@@ -2,11 +2,18 @@ package com.example.thoughtit02;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -56,10 +63,7 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
 
     }
     public void removeItem(int position){
-        Toast.makeText(mContext, "Removed "+mThoughts.get(position)
-                , Toast.LENGTH_SHORT).show();
         ((MainActivity)mContext).removeThought(position);
-
     }
 
     public List<String> getData() {
@@ -69,20 +73,63 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
         return mDates;
     }
 
+
+
     @Override
     public int getItemCount() {
         return mThoughts.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder{
-        TextView thought;
+        EditText thought;
         TextView date;
+        ImageView imageView;
         RelativeLayout parentLayout;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            boolean first = true;
             this.thought = itemView.findViewById(R.id.thought);
             this.date = itemView.findViewById(R.id.date);
             this.parentLayout = itemView.findViewById(R.id.parent_layout);
+            if(first){
+                this.thought.setFocusable(false);
+                //this.thought.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+            }
+            imageView = itemView.findViewById(R.id.image_recycler);
+            //Log.d("DEBUG", "!!!!!!!!!!!!!!!!!!!!!!!!!!!!"+ getAdapterPosition());
+            if(getAdapterPosition()%2==0) {
+                imageView.setImageResource(R.drawable.ic_save_icon);
+            }
+            //imageView.
+            this.thought.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    // TODO Auto-generated method
+                    Log.d("DEBUG", "pos "+ getAdapterPosition() + " getItemId ");
+                    Log.d("DEBUG", "enableEdit: ");
+                    EditText editText = v.findViewById(R.id.thought);
+                    if(editText.isFocusable()){
+                        editText.setFocusableInTouchMode(false);
+                        editText.setFocusable(false);
+                        //editText.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+                        ((MainActivity)mContext).updateThought(getAdapterPosition(), editText);
+                        //call and update method
+                        Log.d("DEBUG", "UNFOCUS");
+                        TextView textView = new TextView(mContext);
+
+                    } else {
+                        editText.setFocusableInTouchMode(true);
+                        editText.setFocusable(true);
+                        //editText.setInputType(InputType.TYPE_CLASS_TEXT);
+                        Log.d("DEBUG", "FOCUS");
+                        ((MainActivity)mContext).toastMessage("Edit enabled. Long press to save/exit.");
+
+                    }
+                    return true;
+                }
+
+            });
+
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
