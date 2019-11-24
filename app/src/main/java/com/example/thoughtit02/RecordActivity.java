@@ -8,7 +8,6 @@ import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
-import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -60,10 +59,8 @@ public class RecordActivity extends AppCompatActivity {
                 mediaRecorder.prepare();
                 mediaRecorder.start();
             } catch (IllegalStateException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 
@@ -82,9 +79,6 @@ public class RecordActivity extends AppCompatActivity {
 
         mediaPlayer.start();
     }
-    public void onPrepared(MediaPlayer player) {
-        player.start();
-    }
     public void stopRecord(View view){
         mediaRecorder.stop();
         mediaRecorder.release();
@@ -99,7 +93,6 @@ public class RecordActivity extends AppCompatActivity {
     }
 
     public String CreateTimeStamp(){
-
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         return timeStamp;
     }

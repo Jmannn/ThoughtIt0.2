@@ -4,4 +4,5 @@
     <string name="show_recent">Show Recent</string>
     <string name="please_select_two_dates_the_latter_date_is_not_inclusive">Please select two dates. The latter date is not inclusive</string>
     <string name="please_two_dates_to_display_thoughts_noted_in_that_date_range">Please two dates to display thoughts noted in that date range.</string>
+    <string name="dateOfThought">Date of Thought: </string>
 </resources>

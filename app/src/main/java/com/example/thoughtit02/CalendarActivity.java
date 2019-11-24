@@ -4,16 +4,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.CalendarView;
-import android.widget.DatePicker;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Calendar;
-import java.util.Date;
 
 public class CalendarActivity extends AppCompatActivity {
     private final String TAG = "CalendarActivity";
@@ -25,12 +22,10 @@ public class CalendarActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.calendar_layout);
         this.mCalendarView = findViewById(R.id.calendarView);
-        boolean selectedOnce = false;
 
         this.mCalendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-                Log.d("DEBUG", "--"+year+ month+dayOfMonth);
                 Calendar calendar = Calendar.getInstance();
                 calendar.set(year, month,dayOfMonth);
 

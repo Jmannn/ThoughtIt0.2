@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -39,8 +38,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import static android.media.MediaPlayer.SEEK_CLOSEST;
-
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
@@ -52,15 +49,10 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerViewAdaptor adaptor;
     private EditText editBox;
     private RecyclerView recyclerView;
-    private SharedPreferences sharedPreferences;
-    private final String dateKey = "Dates";
-    private final String thoughtKey = "Thoughts";
     private Date currentMinDate;
     private Date currentMaxDate;
-    //only used for checking if the first date has been picked
     private boolean selectMaxDate = false;
     private Toolbar toolbar;
-    private Activity activity = (MainActivity.this);
     private ConstraintLayout constraintLayout;
 
     private int redoPosition;
@@ -70,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
     private String redoType;
 
     static final int  CAMERA_REQUEST_CODE = 1;
+    static final int  CALENDAR_REQUEST_CODE = 2;
+    static final int  AUDIO_REQUEST_CODE = 3;
     private Uri picUri;
 
     private MediaPlayer mediaPlayer;
@@ -89,16 +83,14 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate start");
         toolbar = (Toolbar) findViewById(R.id.tool_bar);
         setSupportActionBar(toolbar);
-        sharedPreferences = getSharedPreferences("USER", MODE_PRIVATE);
         this.mDatabaseHelper = new DatabaseHelper(this);
         this.currentMinDate = getYesterday();
         this.currentMaxDate = new Date();
         initThoughts();
         this.editBox = findViewById(R.id.text_enter);
         this.constraintLayout = findViewById(R.id.constraint_layout);
-        //alter this
-        int YOUR_REQUEST_CODE = 200; // could be something else..
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) //check if permission request is necessary
+        int YOUR_REQUEST_CODE = 200;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
         {
             ActivityCompat.requestPermissions(this, new String[] {android.Manifest.permission.RECORD_AUDIO,
                     android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, YOUR_REQUEST_CODE);
@@ -120,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void pickDate(){
         Intent intent = new Intent(MainActivity.this, CalendarActivity.class);
-        startActivityForResult(intent, 666);
+        startActivityForResult(intent, CALENDAR_REQUEST_CODE);
     }
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -146,8 +138,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume(){
         super.onResume();
-        Log.d("DEBUG","RESUME");
-        this.adaptor = null;//must restart
+        Log.d(TAG,"RESUME");
+        this.adaptor = null;
         initThoughts();
         this.mediaPlayer = new MediaPlayer();
         this.mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -168,17 +160,10 @@ public class MainActivity extends AppCompatActivity {
 
             }
 
-        });/*this.mediaPlayer.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-            @Override
-            public void onSeekComplete(MediaPlayer mp) {
-                Log.d("DEBUG","Seek Complete. Current Position: " + mp.getCurrentPosition());
-                mp.start();
-            }
-        });*/
+        });
     }
 
     private File createImageFile() throws IOException {
-        // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
@@ -187,22 +172,17 @@ public class MainActivity extends AppCompatActivity {
                 ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
-
-        // Save a file: path for use with ACTION_VIEW intents
         return image;
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.select_date_range:{
-                Log.d("DEBUG", "selectDateRangee");
                 pickDate();
                 break;
             }
             case R.id.set_current_date:{
-                Log.d("DEBUG", "set to currentdate");
                 getDataInRange(getYesterday(), new Date());
                 this.adaptor.notifyDataSetChanged();
                 this.recyclerView.scrollToPosition(-1);
@@ -214,41 +194,31 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-    //used to return from calendarviewc
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode == 666) {
+        if (requestCode == CALENDAR_REQUEST_CODE) {
             if(resultCode == Activity.RESULT_OK){
                 long result=data.getLongExtra("date", -1);
                 if(this.selectMaxDate){
                     this.selectMaxDate = false;
                     this.currentMaxDate = new Date(result);
-                    Log.d("DEBUG", "++"+this.currentMaxDate.toString());
                     getDataInRange(this.currentMinDate, this.currentMaxDate);
-
-
                 } else {
                     this.selectMaxDate = true;
                     this.currentMinDate = new Date(result);
-                    Log.d("DEBUG", "++"+this.currentMinDate.toString());
                     pickDate();
 
                 }
-                Log.d("DEBUG", new Date(result).toString());
+
             }
-
             if (resultCode == Activity.RESULT_CANCELED) {
-                //Write your code if there's no result
-
+                toastMessage("Could not complete task!");
             }
         }
         else if(requestCode == CAMERA_REQUEST_CODE && resultCode == RESULT_OK){
-            Log.d("DEBUG", "PHOTO TAKEN ");
             Date date = new Date();
-
             String thought = this.editBox.getText().toString();
-            //if(thought.isEmpty()) return;
             Uri uri = picUri;
             this.thoughts.add(thought);
             this.editBox.setText("");
@@ -259,7 +229,7 @@ public class MainActivity extends AppCompatActivity {
             boolean insertData = mDatabaseHelper.addData(date.getTime(),thought,"Photo",uri.toString());
             this.recyclerView.scrollToPosition(this.thoughts.size()-1);
         }
-        else if (requestCode == 777 && resultCode == RESULT_OK){
+        else if (requestCode == AUDIO_REQUEST_CODE && resultCode == RESULT_OK){
             String thought = this.editBox.getText().toString();
             String recordingUri = data.getStringExtra("recordingUri");
             Log.d("DEBUG", "Redcording Done "+ recordingUri);
@@ -281,27 +251,19 @@ public class MainActivity extends AppCompatActivity {
      */
     private void startRecordActivity(){
         Intent intent = new Intent(this, RecordActivity.class);
-        startActivityForResult(intent, 777);
+        startActivityForResult(intent, AUDIO_REQUEST_CODE);
     }
     private Runnable updateSeekBarTime = new Runnable() {
         double newBarPosition = 0;
         public void run() {
-            Log.d("DEBUG", "run: sdfsdfsdfsdfsdf");
             newBarPosition = ((double) mediaPlayer.getCurrentPosition() / (double) mediaPlayer.getDuration()) * 100;
-            //all we need to now is update the seekbar
-            Log.d("DEBUG", "run: "+ newBarPosition);
             adaptor.notifyItemChanged(currentAudioPosition , (int)newBarPosition);
-
             seekHandler.postDelayed(updateSeekBarTime, 1000);
         }
     };
     public void playRecording(int pos){
-        Log.d("DEBUG", "playRecording " +this.type.get(pos)+" "+this.url.get(pos));
 
         if (this.url.get(pos).equals(this.currentAudio)){
-            Log.d("DEBUG", "playRecording: resume " +this.currentDuration);
-
-            //this.mediaPlayer.seekTo(this.currentDuration);
             this.adaptor.notifyItemChanged(pos , 50);
             this.mediaPlayer.start();
         } else {
@@ -310,9 +272,7 @@ public class MainActivity extends AppCompatActivity {
                 this.currentAudio = this.url.get(pos);
                 this.mediaPlayer.reset();
                 this.mediaPlayer.setDataSource(this.url.get(pos));
-                this.mediaPlayer.prepareAsync(); // prepare async to not block main thread
-
-
+                this.mediaPlayer.prepareAsync();
 
             } catch (IOException e) {
                 Toast.makeText(this, "audio file not found", Toast.LENGTH_SHORT).show();
@@ -320,26 +280,21 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-    public void timePostionOfTrack(int position, int progress){
-        Log.d("DEBUG", "timePostionOfTrack: "+progress);
-        double fractionOfTotal = progress/100.0;
-
-        Log.d("DEBUG", ""+fractionOfTotal);
+    public void timePositionOfTrack(int position, int progress){
+        final double oneHundredPercent = 100.0;
+        double fractionOfTotal = progress/oneHundredPercent;
         int newTime = (int) (fractionOfTotal * this.mediaPlayer.getDuration());
-        Log.d("DEBUG", newTime+"/"+this.mediaPlayer.getDuration());
         this.mediaPlayer.pause();
         this.mediaPlayer.seekTo(newTime);
         this.mediaPlayer.start();
     }
     public void pauseRecording(){
-        Log.d("DEBUG", "Pause at: "+this.mediaPlayer.getCurrentPosition());
         if(mediaPlayer.isPlaying()) {
             this.mediaPlayer.pause();
             this.currentDuration = this.mediaPlayer.getCurrentPosition();
         }
     }
     public void stopRecording(){
-        Log.d("DEBUG", "Stopped and reset audio");
         if( mediaPlayer.isPlaying()) {
             this.mediaPlayer.pause();
             this.mediaPlayer.seekTo(0);
@@ -350,14 +305,7 @@ public class MainActivity extends AppCompatActivity {
     //use this for model loading of prev thoughts empty on first open
     private void initThoughts(){
         Log.d(TAG, "Creating thoughts");
-        String str = "";
-
-        /////////////////////////////Heree
-
         getDataInRange(this.currentMinDate, this.currentMaxDate);
-
-        ///..........................DB QUERY FROM STart of yesterday
-
         initRecyclerView();
     }
     /* Used to compute yesterdays date and return it as a date object.
@@ -387,7 +335,6 @@ public class MainActivity extends AppCompatActivity {
         String urlEmpty = "";
         Date date = new Date();
 
-
         String thought = this.editBox.getText().toString();
         if(thought.isEmpty()) return;
 
@@ -409,14 +356,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void searchThought(View view){
-        //Search button
         EditText editText = findViewById(R.id.search_bar);
         String searchStr = editText.getText().toString();
         editText.setText("");
         displayData(mDatabaseHelper.searchData(searchStr));
-
     }
-    //TODO: this will have a range
     public void getDataInRange(Date lower, Date upperBound){
         long lowerBound;
         Calendar cal = Calendar.getInstance();
@@ -425,7 +369,7 @@ public class MainActivity extends AppCompatActivity {
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         lowerBound = cal.getTimeInMillis();
-        ///
+
         cal.setTime(upperBound);
         cal.add(Calendar.DAY_OF_MONTH, 1);
         cal.set(Calendar.HOUR, 0);
@@ -501,7 +445,6 @@ public class MainActivity extends AppCompatActivity {
      * @param the view object
      */
     public void thoughtOptions(View view) {
-        Log.d("DEBUG", "thoughtOptions");
         View v = findViewById(R.id.thought_options);
         PopupMenu pm = new PopupMenu(MainActivity.this, v);
         pm.getMenuInflater().inflate(R.menu.input_options, pm.getMenu());
@@ -540,7 +483,3 @@ public class MainActivity extends AppCompatActivity {
     }
 
 }
-
-//Add buttons to activity for play
-//TODO: DISABLE swipe to delete when sound playing
-//
