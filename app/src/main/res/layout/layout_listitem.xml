@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="15dp"
     android:id="@+id/parent_layout"
-    android:background="@drawable/rounded_box"
-    >
+    android:background="@drawable/rounded_box">
     <TextView
         android:layout_width="match_parent"
         android:layout_height="16dp"
@@ -43,6 +44,48 @@
         android:layout_below="@+id/thought"
         android:layout_centerHorizontal="true"
         android:src="@drawable/ic_action_seach"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginVertical="10dp"
+        android:scaleType="fitXY"
         />
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/audio_widget"
+        android:layout_below="@+id/image_recycler"
+        android:layout_marginHorizontal="10dp"
+        >
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/play"
+            android:src="@drawable/ic_play"
+            ></ImageButton>
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/pause"
+            android:src="@drawable/ic_pause"
+            android:layout_toRightOf="@+id/play"
+            ></ImageButton>
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_stop"
+            android:id="@+id/stop"
+            android:layout_toRightOf="@+id/pause"
+            ></ImageButton>
+        <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/seek_bar"
+            android:layout_toRightOf="@+id/stop"
+            android:max="100"
+            android:layout_centerInParent="true"
+
+            ></SeekBar>
+
+
+    </RelativeLayout>
 
 </RelativeLayout>

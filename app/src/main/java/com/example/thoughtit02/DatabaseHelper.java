@@ -10,7 +10,7 @@ import android.util.Log;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "DatabaseHelper";
-    private static final String TABLE_NAME = "thought_table";
+    private static final String TABLE_NAME = "thought_log_table";
     public static final String COL1 = "date_ms";
     public static final String COL2 = "thought";
     public static final String COL3 = "type";
@@ -54,11 +54,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             return true;
         }
     }
+
+    public boolean updateData(String newThought, long date){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COL2, newThought);
+        long result =  db.update(TABLE_NAME, cv, COL1 + "= ?", new String[] {Long.toString(date)});
+        if(result == -1){
+            return false;
+        } else {
+            return true;
+        }
+
+    }
     //TODO: Eventually this will ask for a range
     public Cursor getData(long lowerBound, long upperBound){
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM "+TABLE_NAME+" WHERE "+COL1+" >= "+lowerBound+" " +
-                "AND "+COL1+" <= "+upperBound;//+"' AND ORDER BY "+COL1;
+                "AND "+COL1+" <= "+upperBound + " ORDER BY " +COL1;//+"' AND ORDER BY "+COL1;
         Log.d("DEBUG", query);
         Cursor data = db.rawQuery(query, null);
         return data;
@@ -75,7 +88,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
     public Cursor searchData(String searchStr){
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = "Select * from "+TABLE_NAME+" where "+ COL2 +" like '%"+searchStr+"%'";
+        String query = "Select * from "+TABLE_NAME+" where "+ COL2 +" like '%"+searchStr+"%'"+ " ORDER BY " +COL1;
         Log.d("DEBUG", query);
         Cursor data = db.rawQuery(query, null);
         return data;
