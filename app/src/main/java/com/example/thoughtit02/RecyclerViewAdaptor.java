@@ -26,10 +26,7 @@ import java.util.List;
 public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdaptor.ViewHolder>{
 
     private static final String TAG = "RecyclerViewAdaptor";
-    private List<String> mThoughts;
-    private List<String> mType;
-    private List<String> mUrl;
-    private List<Date> mDates;
+    private ThoughtCollection thoughtCollection;
 
 
     private Context mContext;
@@ -37,11 +34,8 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
     private CustomBitmapTransform customBitmapTransform =  new CustomBitmapTransform(screenHeight/2);
 
 
-    public RecyclerViewAdaptor(Context mContext, List<String> mThoughts, List<Date> mDates,List<String> mType,List<String> mUrl) {
-        this.mThoughts = mThoughts;
-        this.mDates = mDates;
-        this.mType = mType;
-        this.mUrl = mUrl;
+    public RecyclerViewAdaptor(Context mContext,ThoughtCollection thoughtCollection) {
+        this.thoughtCollection = thoughtCollection;
         this.mContext = mContext;
     }
 
@@ -55,21 +49,20 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final String prefix ="Date of Thought: ";
-        final String photoType = "Photo";
-        final String audioType = "Audio";
+        Thought thought = this.thoughtCollection.getThought(position);
 
-        holder.thought.setText(mThoughts.get(position));
-        holder.date.setText(prefix+mDates.get(position).toString());
-        if (mType.get(position).equals(photoType)) {
+        holder.thought.setText(thought.getThoughtText());
+        holder.date.setText(prefix+thought.getDate());
+        if (thought.getType() == Type.PICTURE) {
             holder.imageView.setVisibility(View.VISIBLE);
             Glide.with(mContext).
                     asBitmap().
-                    load(mUrl.get(position)).
+                    load(thought.getUri()).
                     transform(this.customBitmapTransform).
                     diskCacheStrategy(DiskCacheStrategy.NONE).
                     apply(new RequestOptions()).into(holder.imageView);
             holder.mediaBar.setVisibility(View.GONE);
-        } else if (mType.get(position).equals(audioType)){
+        } else if (thought.getType() == Type.AUDIO){
             holder.imageView.setVisibility(View.GONE);
             holder.mediaBar.setVisibility(View.VISIBLE);
         } else {
@@ -100,7 +93,7 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
 
     @Override
     public int getItemCount() {
-        return mThoughts.size();
+        return this.thoughtCollection.getDisplaySize();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder{

@@ -42,10 +42,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     DatabaseHelper mDatabaseHelper;
-    private List<String> thoughts = new ArrayList<>();
-    private List<Date> dates = new ArrayList<>();
-    private List<String> type = new ArrayList<>();
-    private List<String> url = new ArrayList<>();
     private RecyclerViewAdaptor adaptor;
     private EditText editBox;
     private RecyclerView recyclerView;
@@ -73,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Handler seekHandler;
 
+    private ThoughtCollection thoughtCollection;
 
 
     @Override
@@ -218,30 +215,23 @@ public class MainActivity extends AppCompatActivity {
         }
         else if(requestCode == CAMERA_REQUEST_CODE && resultCode == RESULT_OK){
             Date date = new Date();
-            String thought = this.editBox.getText().toString();
+            String thoughtText = this.editBox.getText().toString();
             Uri uri = picUri;
-            this.thoughts.add(thought);
+            Thought thought = new Thought(date, thoughtText, Type.PICTURE, uri.toString());
+            this.thoughtCollection.addThought(thought);
             this.editBox.setText("");
-            this.dates.add(date);
-            this.type.add("Photo");
-            this.url.add(uri.toString());
-            this.adaptor.notifyItemInserted(this.thoughts.size()-1);
-            boolean insertData = mDatabaseHelper.addData(date.getTime(),thought,"Photo",uri.toString());
-            this.recyclerView.scrollToPosition(this.thoughts.size()-1);
+            this.adaptor.notifyItemInserted(this.thoughtCollection.getDisplaySize()-1);
+            this.recyclerView.scrollToPosition(this.thoughtCollection.getDisplaySize()-1);
         }
         else if (requestCode == AUDIO_REQUEST_CODE && resultCode == RESULT_OK){
-            String thought = this.editBox.getText().toString();
+            String thoughtText = this.editBox.getText().toString();
             String recordingUri = data.getStringExtra("recordingUri");
-            Log.d("DEBUG", "Redcording Done "+ recordingUri);
             Date date = new Date();
-            this.thoughts.add(thought);
+            Thought thought = new Thought(date, thoughtText, Type.AUDIO, recordingUri);
+            this.thoughtCollection.addThought(thought);
             this.editBox.setText("");
-            this.dates.add(date);
-            this.type.add("Audio");
-            this.url.add(recordingUri);
-            this.adaptor.notifyItemInserted(this.thoughts.size()-1);
-            boolean insertData = mDatabaseHelper.addData(date.getTime(),thought,"Audio",recordingUri);
-            this.recyclerView.scrollToPosition(this.thoughts.size()-1);
+            this.adaptor.notifyItemInserted(this.thoughtCollection.getDisplaySize()-1);
+            this.recyclerView.scrollToPosition(this.thoughtCollection.getDisplaySize()-1);
 
         }
     }
@@ -262,18 +252,18 @@ public class MainActivity extends AppCompatActivity {
         }
     };
     public void playRecording(int pos){
-
-        if (this.url.get(pos).equals(this.currentAudio)){
+        Thought thought = this.thoughtCollection.getThought(pos);
+        String uri = thought.getUri();
+        if (uri.equals(this.currentAudio)){
             this.adaptor.notifyItemChanged(pos , 50);
             this.mediaPlayer.start();
         } else {
             try {
                 this.currentAudioPosition = pos;
-                this.currentAudio = this.url.get(pos);
+                this.currentAudio = uri;
                 this.mediaPlayer.reset();
-                this.mediaPlayer.setDataSource(this.url.get(pos));
+                this.mediaPlayer.setDataSource(uri);
                 this.mediaPlayer.prepareAsync();
-
             } catch (IOException e) {
                 Toast.makeText(this, "audio file not found", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
@@ -320,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
     private void initRecyclerView(){
         Log.d(TAG,  "initRecyclerView: init recyclerview.");
         this.recyclerView = findViewById(R.id.recycler_view);
-        this.adaptor = new RecyclerViewAdaptor(this, thoughts, dates, type, url);
+        this.adaptor = new RecyclerViewAdaptor(this, thoughtCollection);
         recyclerView.setAdapter(adaptor);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.hasFixedSize();
@@ -331,23 +321,17 @@ public class MainActivity extends AppCompatActivity {
     /*Saves a plaintext thougth */
     public void saveThought(View view){
         Log.d(TAG,"saveThought");
-        String type = "Text";
         String urlEmpty = "";
-        Date date = new Date();
+        String thoughtText = this.editBox.getText().toString();
+        Thought thought = new Thought(new Date(), thoughtText, Type.TEXT, urlEmpty);
 
-        String thought = this.editBox.getText().toString();
-        if(thought.isEmpty()) return;
-
-        this.thoughts.add(thought);
+        if(thoughtText.isEmpty()) return;
+        boolean insertData = this.thoughtCollection.addThought(thought);
         this.editBox.setText("");
-        this.dates.add(date);
-        this.type.add(type);
-        this.url.add(urlEmpty);
-        this.adaptor.notifyItemInserted(this.thoughts.size()-1);
-        this.recyclerView.scrollToPosition(this.thoughts.size()-1);
-        boolean insertData = mDatabaseHelper.addData(date.getTime(),thought,type,urlEmpty);
+        this.adaptor.notifyItemInserted(this.thoughtCollection.getDisplaySize()-1);
+        this.recyclerView.scrollToPosition(this.thoughtCollection.getDisplaySize()-1);
 
-        if(insertData ==false){
+        if(!insertData){
             toastMessage("Could not insert thought.");
         } else {
             toastMessage("Created thought");
@@ -394,21 +378,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     public void removeThought(int pos){
-        boolean result = mDatabaseHelper.removeDatum(this.dates.get(pos).getTime());
+        boolean result = this.thoughtCollection.removeThought(pos);
 
         if(result){
-            this.redoThought = this.thoughts.get(pos);
-            this.redoDate = this.dates.get(pos);
-            this.redoType = this.type.get(pos);
-            this.redoUri = this.url.get(pos);
-            this.redoPosition = pos;
 
-            this.thoughts.remove(pos);
-            this.dates.remove(pos);
-            this.type.remove(pos);
-            this.url.remove(pos);
             this.adaptor.notifyItemRemoved(pos);
-            final Snackbar snackbar = Snackbar.make(constraintLayout, "Removed: " + this.redoThought, Snackbar.LENGTH_LONG)
+            final Snackbar snackbar = Snackbar.make(constraintLayout, "Removed: "
+                    + this.thoughtCollection.getRedo().getThoughtText(), Snackbar.LENGTH_LONG)
                     .setAction("UNDO", new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -417,7 +393,7 @@ public class MainActivity extends AppCompatActivity {
                     });
             snackbar.show();
         } else {
-            toastMessage("'"+thoughts.get(pos) + "' could not be removed.");
+            toastMessage(" Could not remove thought !");
         }
 
     }
@@ -473,8 +449,7 @@ public class MainActivity extends AppCompatActivity {
     }
     public void updateThought(int position, EditText editText){
         String editedThought = editText.getText().toString();
-        this.thoughts.set(position, editedThought);
-        boolean result = this.mDatabaseHelper.updateData(editedThought, this.dates.get(position).getTime());
+        boolean result = this.thoughtCollection.updateThought(position, editedThought);
         if (result){
             toastMessage("Thought edit SUCCESS");
         } else {
