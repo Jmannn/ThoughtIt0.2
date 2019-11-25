@@ -20,7 +20,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 
-import java.util.Date;
 import java.util.List;
 
 public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdaptor.ViewHolder>{
@@ -34,7 +33,7 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
     private CustomBitmapTransform customBitmapTransform =  new CustomBitmapTransform(screenHeight/2);
 
 
-    public RecyclerViewAdaptor(Context mContext,ThoughtCollection thoughtCollection) {
+    RecyclerViewAdaptor(Context mContext,ThoughtCollection thoughtCollection) {
         this.thoughtCollection = thoughtCollection;
         this.mContext = mContext;
     }
@@ -50,9 +49,9 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final String prefix ="Date of Thought: ";
         Thought thought = this.thoughtCollection.getThought(position);
-
+        String date = prefix+thought.getDate();
         holder.thought.setText(thought.getThoughtText());
-        holder.date.setText(prefix+thought.getDate());
+        holder.date.setText(date);
         if (thought.getType() == Type.PICTURE) {
             holder.imageView.setVisibility(View.VISIBLE);
             Glide.with(mContext).
@@ -69,8 +68,6 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
             holder.imageView.setVisibility(View.GONE);
             holder.mediaBar.setVisibility(View.GONE);
         }
-
-
     }
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position, List<Object> payloads) {
@@ -87,7 +84,7 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
         }
 
     }
-    public void removeItem(int position){
+    void removeItem(int position){
         ((MainActivity)mContext).removeThought(position);
     }
 
@@ -96,7 +93,7 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
         return this.thoughtCollection.getDisplaySize();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    class ViewHolder extends RecyclerView.ViewHolder{
         EditText thought;
         TextView date;
         ImageView imageView;
@@ -106,7 +103,7 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
         ImageButton pauseButton;
         ImageButton stopButton;
         SeekBar seekBar;
-        public ViewHolder(@NonNull View itemView) {
+        ViewHolder(@NonNull View itemView) {
             super(itemView);
             this.thought = itemView.findViewById(R.id.thought);
             this.date = itemView.findViewById(R.id.date);
@@ -122,9 +119,7 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
             this.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    if (fromUser) {
-                        ((MainActivity) mContext).timePositionOfTrack(getAdapterPosition(), progress);
-                    }
+                    if (fromUser) ((MainActivity) mContext).timePositionOfTrack(progress);
                 }
 
                 @Override

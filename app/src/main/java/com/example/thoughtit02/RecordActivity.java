@@ -1,5 +1,6 @@
 package com.example.thoughtit02;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -51,7 +52,7 @@ public class RecordActivity extends AppCompatActivity {
 
             AudioSavePathInDevice =
                     Environment.getExternalStorageDirectory().getAbsolutePath() + "/" +
-                            CreateTimeStamp() + "AudioRecording.3gp";
+                            CreateTimeStamp() + getString(R.string.GenericAudioFileNameExtension);
 
             MediaRecorderReady();
 
@@ -93,7 +94,8 @@ public class RecordActivity extends AppCompatActivity {
     }
 
     public String CreateTimeStamp(){
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        @SuppressLint("SimpleDateFormat") String timeStamp =
+                new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         return timeStamp;
     }
     public void save(View view){
@@ -106,7 +108,7 @@ public class RecordActivity extends AppCompatActivity {
             mediaRecorder = null;
         }
         Intent intent = new Intent(RecordActivity.this, MainActivity.class);
-        intent.putExtra("recordingUri", AudioSavePathInDevice);
+        intent.putExtra(getString(R.string.RecordingUriIntentID), AudioSavePathInDevice);
         setResult(Activity.RESULT_OK, intent);
         finish();
     }

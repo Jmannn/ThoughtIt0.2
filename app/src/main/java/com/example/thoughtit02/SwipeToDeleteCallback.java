@@ -8,7 +8,7 @@ public class SwipeToDeleteCallback extends ItemTouchHelper.SimpleCallback {
     private RecyclerViewAdaptor mAdapter;
 
 
-    public SwipeToDeleteCallback(RecyclerViewAdaptor adapter) {
+    SwipeToDeleteCallback(RecyclerViewAdaptor adapter) {
         super(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
         mAdapter = adapter;
     }

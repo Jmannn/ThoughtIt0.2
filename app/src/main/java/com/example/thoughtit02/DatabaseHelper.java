@@ -11,87 +11,77 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "DatabaseHelper";
     private static final String TABLE_NAME = "thought_log_table";
-    public static final String COL1 = "date_ms";
-    public static final String COL2 = "thought";
-    public static final String COL3 = "type";
-    public static final String COL4 = "url";
+    private static final String COL1 = "date_ms";
+    private static final String COL2 = "thought";
+    private static final String COL3 = "type";
+    private static final String COL4 = "url";
+    private Context context;
 
-    public DatabaseHelper(Context context){
+    DatabaseHelper(Context context){
         super(context,TABLE_NAME,null,1);
+        this.context = context;
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String createTable = "CREATE TABLE "+TABLE_NAME+ " ("+COL1+" INTEGER PRIMARY KEY " +
-                "AUTOINCREMENT, " + COL2 + " TEXT,"+ COL3 + " TEXT,"+ COL4 + " TEXT)";
+        String createTable = context.getString(R.string.CreateTableSQL)+TABLE_NAME+ " ("+COL1+context.getString(R.string.IntPrimaryKeySQL) +
+                context.getString(R.string.AutoIncrementSQL) + COL2 + " TEXT,"+ COL3 + " TEXT,"+ COL4 + " TEXT)";
         db.execSQL(createTable);
     }
-
+    
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-        db.execSQL("DROP TABLE IF EXISTS " +TABLE_NAME);
+        db.execSQL(context.getString(R.string.ForgetTableSQL) +TABLE_NAME);
         onCreate(db);
     }
-    public void clearDatabase() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String clearDBQuery = "DELETE FROM "+TABLE_NAME;
+    void clearDatabase() {
+        SQLiteDatabase db;
+        db = this.getWritableDatabase();
+        String clearDBQuery = context.getString(R.string.SQLDelete)+TABLE_NAME;
         db.delete(TABLE_NAME, null, null);
         db.execSQL(clearDBQuery);
     }
-    public boolean addData(Long date, String thought, String type, String url){
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
+    boolean addData(Long date, String thought, String type, String url){
+        SQLiteDatabase db;
+        ContentValues contentValues;
+        db = this.getWritableDatabase();
+        contentValues = new ContentValues();
         contentValues.put(COL1, date);
         contentValues.put(COL2, thought);
         contentValues.put(COL3, type);
         contentValues.put(COL4, url);
         Log.d(TAG, "addData: adding "+thought+" to table: "+TABLE_NAME);
         long result = db.insert(TABLE_NAME, null, contentValues);
-        if(result == -1){
-            return false;
-        } else {
-            return true;
-        }
+        return !(result == -1);
     }
 
-    public boolean updateData(String newThought, long date){
+    boolean updateData(String newThought, long date){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(COL2, newThought);
         long result =  db.update(TABLE_NAME, cv, COL1 + "= ?", new String[] {Long.toString(date)});
-        if(result == -1){
-            return false;
-        } else {
-            return true;
-        }
+        return !(result == -1);
 
     }
-    //TODO: Eventually this will ask for a range
-    public Cursor getData(long lowerBound, long upperBound){
+    Cursor getData(long lowerBound, long upperBound){
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM "+TABLE_NAME+" WHERE "+COL1+" >= "+lowerBound+" " +
                 "AND "+COL1+" <= "+upperBound + " ORDER BY " +COL1;//+"' AND ORDER BY "+COL1;
         Log.d("DEBUG", query);
-        Cursor data = db.rawQuery(query, null);
-        return data;
+        return db.rawQuery(query, null);
     }
-    public boolean removeDatum(long date){
+    boolean removeDatum(long date){
         SQLiteDatabase db = this.getWritableDatabase();
         String clause = COL1+"=?";
         long result = db.delete(TABLE_NAME, clause, new String[]{Long.toString(date)});
-        if(result == -1){
-            return false;
-        } else {
-            return true;
-        }
+        return !(result == -1);
     }
-    public Cursor searchData(String searchStr){
+    Cursor searchData(String searchStr){
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "Select * from "+TABLE_NAME+" where "+ COL2 +" like '%"+searchStr+"%'"+ " ORDER BY " +COL1;
         Log.d("DEBUG", query);
-        Cursor data = db.rawQuery(query, null);
-        return data;
+        return db.rawQuery(query, null);
 
     }
 }

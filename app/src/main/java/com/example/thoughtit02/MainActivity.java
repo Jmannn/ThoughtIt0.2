@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
@@ -33,29 +32,19 @@ import com.google.android.material.snackbar.Snackbar;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
-    DatabaseHelper mDatabaseHelper;
     private RecyclerViewAdaptor adaptor;
     private EditText editBox;
     private RecyclerView recyclerView;
     private Date currentMinDate;
     private Date currentMaxDate;
     private boolean selectMaxDate = false;
-    private Toolbar toolbar;
     private ConstraintLayout constraintLayout;
-
-    private int redoPosition;
-    private String redoThought;
-    private Date redoDate;
-    private String redoUri;
-    private String redoType;
 
     static final int  CAMERA_REQUEST_CODE = 1;
     static final int  CALENDAR_REQUEST_CODE = 2;
@@ -63,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
     private Uri picUri;
 
     private MediaPlayer mediaPlayer;
-    private int currentDuration;
     private String currentAudio;
     private int currentAudioPosition;
 
@@ -78,10 +66,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.d(TAG, "onCreate start");
-        toolbar = (Toolbar) findViewById(R.id.tool_bar);
+        Toolbar toolbar = findViewById(R.id.tool_bar);
         setSupportActionBar(toolbar);
-        this.mDatabaseHelper = new DatabaseHelper(this);
-        this.currentMinDate = getYesterday();
+        this.currentMinDate = Utilities.getYesterday();
         this.currentMaxDate = new Date();
         initThoughts();
         this.editBox = findViewById(R.id.text_enter);
@@ -105,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
     public void onPause(){
         super.onPause();
         this.mediaPlayer.release();
+        this.thoughtCollection.removeLastFile();
     }
 
     public void pickDate(){
@@ -118,8 +106,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 photoFile = createImageFile();
             } catch (IOException ex) {
-                // Error occurred while creating the File
-
+                Log.d(TAG, "dispatchTakePictureIntent: Could not create image file!");
             }
             if (photoFile != null) {
 
@@ -145,8 +132,6 @@ public class MainActivity extends AppCompatActivity {
                 player.start();
                 seekHandler = new Handler();
                 seekHandler.post(updateSeekBarTime);
-
-
             }
 
         });
@@ -154,22 +139,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 mediaPlayer.seekTo(0);
-
             }
 
         });
     }
-
     private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.ENGLISH).toString();
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
+        return File.createTempFile(
                 imageFileName,  /* prefix */
                 ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
-        return image;
     }
 
     @Override
@@ -180,13 +162,17 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
             case R.id.set_current_date:{
-                getDataInRange(getYesterday(), new Date());
-                this.adaptor.notifyDataSetChanged();
-                this.recyclerView.scrollToPosition(-1);
+                this.thoughtCollection.prepareDataSet(Utilities.getYesterday(), new Date());
+                if(this.adaptor != null) {
+                    this.adaptor.notifyDataSetChanged();
+                    this.recyclerView.scrollToPosition(this.thoughtCollection.getDisplaySize() - 1);
+                }
                 break;
             }
             case R.id.clear:{
-                mDatabaseHelper.clearDatabase();
+                this.thoughtCollection.clearThoughts();
+                this.adaptor.notifyDataSetChanged();
+
             }
         }
         return super.onOptionsItemSelected(item);
@@ -196,11 +182,11 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == CALENDAR_REQUEST_CODE) {
             if(resultCode == Activity.RESULT_OK){
-                long result=data.getLongExtra("date", -1);
+                long result=data.getLongExtra(getString(R.string.DateIntentID), -1);
                 if(this.selectMaxDate){
                     this.selectMaxDate = false;
                     this.currentMaxDate = new Date(result);
-                    getDataInRange(this.currentMinDate, this.currentMaxDate);
+                    this.thoughtCollection.prepareDataSet(this.currentMinDate, this.currentMaxDate);
                 } else {
                     this.selectMaxDate = true;
                     this.currentMinDate = new Date(result);
@@ -225,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
         }
         else if (requestCode == AUDIO_REQUEST_CODE && resultCode == RESULT_OK){
             String thoughtText = this.editBox.getText().toString();
-            String recordingUri = data.getStringExtra("recordingUri");
+            String recordingUri = data.getStringExtra(getString(R.string.RecordingUriIntentID));
             Date date = new Date();
             Thought thought = new Thought(date, thoughtText, Type.AUDIO, recordingUri);
             this.thoughtCollection.addThought(thought);
@@ -270,10 +256,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-    public void timePositionOfTrack(int position, int progress){
+    public void timePositionOfTrack(int progress){
         final double oneHundredPercent = 100.0;
-        double fractionOfTotal = progress/oneHundredPercent;
-        int newTime = (int) (fractionOfTotal * this.mediaPlayer.getDuration());
+        double fractionOfTotal;
+        int newTime;
+        fractionOfTotal = progress/oneHundredPercent;
+        newTime = (int) (fractionOfTotal * this.mediaPlayer.getDuration());
         this.mediaPlayer.pause();
         this.mediaPlayer.seekTo(newTime);
         this.mediaPlayer.start();
@@ -281,7 +269,6 @@ public class MainActivity extends AppCompatActivity {
     public void pauseRecording(){
         if(mediaPlayer.isPlaying()) {
             this.mediaPlayer.pause();
-            this.currentDuration = this.mediaPlayer.getCurrentPosition();
         }
     }
     public void stopRecording(){
@@ -295,17 +282,11 @@ public class MainActivity extends AppCompatActivity {
     //use this for model loading of prev thoughts empty on first open
     private void initThoughts(){
         Log.d(TAG, "Creating thoughts");
-        getDataInRange(this.currentMinDate, this.currentMaxDate);
+        this.thoughtCollection = new ThoughtCollection(this);
+        this.thoughtCollection.prepareDataSet(this.currentMinDate, this.currentMaxDate);
         initRecyclerView();
     }
-    /* Used to compute yesterdays date and return it as a date object.
-        @return the date object containing yesterdays date
-     */
-    private Date getYesterday(){
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DATE, -1);
-        return calendar.getTime();
-    }
+
 
     private void initRecyclerView(){
         Log.d(TAG,  "initRecyclerView: init recyclerview.");
@@ -343,43 +324,14 @@ public class MainActivity extends AppCompatActivity {
         EditText editText = findViewById(R.id.search_bar);
         String searchStr = editText.getText().toString();
         editText.setText("");
-        displayData(mDatabaseHelper.searchData(searchStr));
+        this.thoughtCollection.searchAndDisplay(searchStr);
+        this.adaptor.notifyDataSetChanged();
+        this.recyclerView.scrollToPosition(this.thoughtCollection.getDisplaySize() - 1);
     }
-    public void getDataInRange(Date lower, Date upperBound){
-        long lowerBound;
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(lower);
-        cal.set(Calendar.HOUR, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        lowerBound = cal.getTimeInMillis();
 
-        cal.setTime(upperBound);
-        cal.add(Calendar.DAY_OF_MONTH, 1);
-        cal.set(Calendar.HOUR, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        displayData(mDatabaseHelper.getData(lowerBound, cal.getTimeInMillis()));
-    }
-    private void displayData(Cursor cursor){
-        this.dates.clear();
-        this.thoughts.clear();
-        this.type.clear();
-        this.url.clear();
-        while(cursor.moveToNext()){
-            this.dates.add(new Date(cursor.getLong(0)));
-            this.thoughts.add(cursor.getString(1));
-            this.type.add(cursor.getString(2));
-            this.url.add(cursor.getString(3));
-        }
-        if(this.adaptor != null) {
-            this.adaptor.notifyDataSetChanged();
-            this.recyclerView.scrollToPosition(this.thoughts.size() - 1);
-        }
-    }
+
     public void removeThought(int pos){
         boolean result = this.thoughtCollection.removeThought(pos);
-
         if(result){
 
             this.adaptor.notifyItemRemoved(pos);
@@ -398,16 +350,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
     public void redo(){
-        if (this.redoThought == null || this.redoType == null
-        || this.redoDate == null || this.redoUri == null){
+        if (!this.thoughtCollection.canRedo()){
             toastMessage("Nothing to redo!");
             return;
         }
-        this.thoughts.add(this.redoPosition,this.redoThought);
-        this.dates.add(this.redoPosition,this.redoDate);
-        this.adaptor.notifyItemInserted(this.redoPosition);
-        this.recyclerView.scrollToPosition(this.thoughts.size()-1);
-        this.mDatabaseHelper.addData(redoDate.getTime(), redoThought, redoType, redoUri);
+        this.thoughtCollection.redo();
+        this.adaptor.notifyItemInserted(this.thoughtCollection.getRedoPosition());
+        this.recyclerView.scrollToPosition(this.thoughtCollection.getDisplaySize()-1);
         Snackbar snackbar = Snackbar.make(constraintLayout, "Undo Success",Snackbar.LENGTH_SHORT);
         snackbar.show();
     }
