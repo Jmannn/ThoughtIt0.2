@@ -23,28 +23,41 @@ import com.bumptech.glide.request.RequestOptions;
 import java.util.List;
 
 public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdaptor.ViewHolder>{
-
+    /* Log Tag. */
     private static final String TAG = "RecyclerViewAdaptor";
+    /* A reference to the model. */
     private ThoughtCollection thoughtCollection;
-
-
+    /* A reference to the main activity context. */
     private Context mContext;
+    /* The height of the screen of the device. */
     private int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+    /* Custom bitmap transformation object for limiting image size. */
     private CustomBitmapTransform customBitmapTransform =  new CustomBitmapTransform(screenHeight/2);
 
-
+    /* Sets a copy of the references to context and model to this instance.
+     * @param reference of the model
+     * @param main activity context
+     */
     RecyclerViewAdaptor(Context mContext,ThoughtCollection thoughtCollection) {
         this.thoughtCollection = thoughtCollection;
         this.mContext = mContext;
     }
-
+    /* This method inflates the list item for RecyclerView.
+     * @param the parent recycler view
+     * @param viewtype ID
+     * @return a viewholder containing these views
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_listitem,parent,false);
         return new ViewHolder(view);
     }
-
+    /* This method prepares the view for display by adding the data from the model,
+     * using Glide to display an image, and hiding no applicable view elements for the data type.
+     * @param the view holder
+     * @param ViewHolder position to bind to
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final String prefix ="Date of Thought: ";
@@ -69,6 +82,12 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
             holder.mediaBar.setVisibility(View.GONE);
         }
     }
+    /* Used primarily to update a seek bar, this method allows main activity to
+     * to make changes to view items.
+     * @param the ViewHolder
+     * @param the position within the ViewHolder
+     * @param the data to add to the view
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position, List<Object> payloads) {
 
@@ -84,15 +103,26 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
         }
 
     }
-    void removeItem(int position){
-        ((MainActivity)mContext).removeThought(position);
+    /* This method instructs main activity to remove an item from
+     * both recycler view and model.
+     * @param pos - the position to remove the data from
+     */
+    void removeItem(int pos){
+        ((MainActivity)mContext).removeThought(pos);
     }
 
+    /* Returns the amount of items to be displayed. This tells RecyclerView how many
+     * items to display.
+     * @param display count
+     */
     @Override
     public int getItemCount() {
         return this.thoughtCollection.getDisplaySize();
     }
-
+    /* This inner class defines operations that happen to every list item.
+     * It creates references to the view elements in the ViewHolder and attaches
+     * listeners to various components.
+     */
     class ViewHolder extends RecyclerView.ViewHolder{
         EditText thought;
         TextView date;
@@ -117,11 +147,16 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
 
             imageView = itemView.findViewById(R.id.image_recycler);
             this.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                /* If the user touching the bar causes this event, then it will update the
+                 * track in main activity.
+                 * @param seekBar - the bar touched by the user
+                 * @param progress - the current change in progress
+                 * @param fromUser - whether the user touched the bar
+                 */
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                     if (fromUser) ((MainActivity) mContext).changeTimePositionOfTrack(progress);
                 }
-
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
                 }
@@ -130,24 +165,41 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
                 }
             });
             this.playButton.setOnClickListener(new View.OnClickListener() {
+                /* Instructs MediaPlayer in main activity to begin playing the file
+                 * corresponding to the list item.
+                 * @param v - The play button that caused the event.
+                 */
                 @Override
                 public void onClick(View v) {
                     ((MainActivity)mContext).playRecording(getAdapterPosition());
                 }
             });
             this.pauseButton.setOnClickListener(new View.OnClickListener() {
+                /* Instructs MediaPlayer in main activity to pause the audio file
+                 * corresponding to the list item.
+                 * @param v - The pause button that caused the event.
+                 */
                 @Override
                 public void onClick(View v) {
                     ((MainActivity)mContext).pauseRecording();
                 }
             });
             this.stopButton.setOnClickListener(new View.OnClickListener() {
+                /* Instructs MediaPlayer in main activity to stop playing file
+                 * corresponding to the list item.
+                 * @param v - The stop button that caused the event.
+                 */
                 @Override
                 public void onClick(View v) {
                     ((MainActivity)mContext).stopRecording();
                 }
             });
             this.thought.setOnLongClickListener(new View.OnLongClickListener() {
+                /* This method makes the text being displayed in the list item
+                 * editable on long click. A repeat long click saves the new entry
+                 * and makes it uneditable again.
+                 * @param v - The EditText view that caused the event.
+                 */
                 @Override
                 public boolean onLongClick(View v) {
                     EditText editText = v.findViewById(R.id.thought);
@@ -166,15 +218,10 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerViewAdapto
                 }
 
             });
-
-            itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    return true;
-                }
-
-            });
             itemView.setOnClickListener(new View.OnClickListener() {
+                /* When a list item is clicked, a small help message should appear.
+                 * @param v - The list item view that caused the event.
+                 */
                 @Override
                 public void onClick(View v) {
                     Toast.makeText(mContext, "To remove item swipe horizontally. Long press the " +

@@ -2,7 +2,9 @@ package com.example.thoughtit02;
 
 import java.util.Calendar;
 import java.util.Date;
-
+/* A class containing simple shared utilities.
+ * @author Johnny Mann
+ */
 class Utilities {
     /* Used to compute yesterdays date and return it as a date object.
         @return the date object containing yesterdays date

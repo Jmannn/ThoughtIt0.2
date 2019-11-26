@@ -194,8 +194,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.set_current_date:{
                 this.thoughtCollection.prepareDataSet(Utilities.getYesterday(), new Date());
                 if(this.adaptor != null) {
-                    this.adaptor.notifyDataSetChanged();
-                    this.recyclerView.scrollToPosition(this.thoughtCollection.getDisplaySize() - 1);
+                    notifyDataSetChangedAndScrollToBottom();
                 }
                 break;
             }
@@ -234,8 +233,7 @@ public class MainActivity extends AppCompatActivity {
             Thought thought = new Thought(date, thoughtText, Type.PICTURE, uri.toString());
             this.thoughtCollection.addThought(thought);
             this.editBox.setText("");
-            this.adaptor.notifyItemInserted(this.thoughtCollection.getDisplaySize()-1);
-            this.recyclerView.scrollToPosition(this.thoughtCollection.getDisplaySize()-1);
+            notifyAdaptorAndScrollToBottom();
         }
         else if (requestCode == AUDIO_REQUEST_CODE && resultCode == RESULT_OK){
             String thoughtText = this.editBox.getText().toString();
@@ -244,8 +242,7 @@ public class MainActivity extends AppCompatActivity {
             Thought thought = new Thought(date, thoughtText, Type.AUDIO, recordingUri);
             this.thoughtCollection.addThought(thought);
             this.editBox.setText("");
-            this.adaptor.notifyItemInserted(this.thoughtCollection.getDisplaySize()-1);
-            this.recyclerView.scrollToPosition(this.thoughtCollection.getDisplaySize()-1);
+            notifyAdaptorAndScrollToBottom();
 
         } else if (resultCode == Activity.RESULT_CANCELED) {
             toastMessage("Could not complete task!");
@@ -347,8 +344,7 @@ public class MainActivity extends AppCompatActivity {
         if(thoughtText.isEmpty()) return;
         boolean insertData = this.thoughtCollection.addThought(thought);
         this.editBox.setText("");
-        this.adaptor.notifyItemInserted(this.thoughtCollection.getDisplaySize()-1);
-        this.recyclerView.scrollToPosition(this.thoughtCollection.getDisplaySize()-1);
+        notifyAdaptorAndScrollToBottom();
 
         if(!insertData){
             toastMessage("Could not insert thought.");
@@ -366,8 +362,7 @@ public class MainActivity extends AppCompatActivity {
         String searchStr = editText.getText().toString();
         editText.setText("");
         this.thoughtCollection.searchAndDisplay(searchStr);
-        this.adaptor.notifyDataSetChanged();
-        this.recyclerView.scrollToPosition(this.thoughtCollection.getDisplaySize() - 1);
+        notifyDataSetChangedAndScrollToBottom();
     }
     /* Removes a thought from both the database and the RecyclerView. It displays a pop which allows
      * a user to redo this.
@@ -398,8 +393,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         this.thoughtCollection.redo();
-        this.adaptor.notifyItemInserted(this.thoughtCollection.getRedoPosition());
-        this.recyclerView.scrollToPosition(this.thoughtCollection.getDisplaySize()-1);
+        notifyAdaptorAndScrollToBottom();
         Snackbar snackbar = Snackbar.make(constraintLayout, "Undo Success",Snackbar.LENGTH_SHORT);
         snackbar.show();
     }
@@ -453,6 +447,20 @@ public class MainActivity extends AppCompatActivity {
         } else {
             toastMessage("Thought edit not successful");
         }
+    }
+    /* Notifies the recycler view adaptor of single change and instructs it to scroll
+     * to the bottom of the screen.
+     */
+    private void notifyAdaptorAndScrollToBottom(){
+        this.adaptor.notifyItemInserted(this.thoughtCollection.getDisplaySize()-1);
+        this.recyclerView.scrollToPosition(this.thoughtCollection.getDisplaySize()-1);
+    }
+    /* Notifies the recycler view adaptor of change and instructs it to scroll
+     * to the bottom of the screen.
+     */
+    private void notifyDataSetChangedAndScrollToBottom(){
+        this.adaptor.notifyDataSetChanged();
+        this.recyclerView.scrollToPosition(this.thoughtCollection.getDisplaySize() - 1);
     }
 
 }
