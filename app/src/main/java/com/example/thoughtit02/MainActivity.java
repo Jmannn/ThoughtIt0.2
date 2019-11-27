@@ -393,9 +393,9 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         this.thoughtCollection.redo();
-        notifyAdaptorAndScrollToBottom();
         Snackbar snackbar = Snackbar.make(constraintLayout, "Undo Success",Snackbar.LENGTH_SHORT);
         snackbar.show();
+        this.adaptor.notifyItemInserted(this.thoughtCollection.getRedoPosition());
     }
     /* Shows a message to the user.
      * @param the text to display
@@ -451,9 +451,12 @@ public class MainActivity extends AppCompatActivity {
     /* Notifies the recycler view adaptor of single change and instructs it to scroll
      * to the bottom of the screen.
      */
-    private void notifyAdaptorAndScrollToBottom(){
-        this.adaptor.notifyItemInserted(this.thoughtCollection.getDisplaySize()-1);
+    private void notifyAdaptorAndScrollToBottom(int pos){
+        this.adaptor.notifyItemInserted(pos);
         this.recyclerView.scrollToPosition(this.thoughtCollection.getDisplaySize()-1);
+    }
+    private void notifyAdaptorAndScrollToBottom(){
+        notifyAdaptorAndScrollToBottom(this.thoughtCollection.getDisplaySize()-1);
     }
     /* Notifies the recycler view adaptor of change and instructs it to scroll
      * to the bottom of the screen.

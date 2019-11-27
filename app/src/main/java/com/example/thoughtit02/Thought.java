@@ -1,5 +1,6 @@
 package com.example.thoughtit02;
 
+import java.io.InvalidObjectException;
 import java.util.Date;
 /* This class represents a row in a database table
  * which is described as a thought.
@@ -15,23 +16,36 @@ public class Thought {
     /* The location of the file in android storage. */
     private String uri;
     /* A constructor which accepts thought as date in milliseconds. */
-    private Thought(Long time, String thought, Type type, String uri){
+    Thought(Long time, String thought, Type type, String uri) {
         this.dateInMS = time;
         this.thought = thought;
         this.type = type;
         this.uri = uri;
+        if (time < 0 || time > Utilities.getToday()||
+        Utilities.checkBlank(thought)){
+            throw new IllegalArgumentException("Time must be ms post 1970");
+        } else if (Type.TEXT != type && Utilities.checkBlank(uri)){
+            throw new IllegalArgumentException("Uri must be provided for non text type.");
+        }
     }
     /* A constructor which accepts date as a Date object. */
     Thought(Date time, String thought, Type type, String uri){
         this(time.getTime(),thought,type,uri);
     }
     /* A constructor which accepts date in ms and type as a string representation. */
-    Thought(Long time, String thought, String typeStr, String uri){
+    Thought(Long time, String thought, String typeStr, String uri) {
         this.dateInMS = time;
         this.thought = thought;
         this.type = stringToType(typeStr);
         this.uri = uri;
+        if (time < 0 || time > Utilities.getToday() ||
+        Utilities.checkBlank(new String[]{thought, typeStr})){
+            throw new IllegalArgumentException("Time must be ms post 1970");
+        } else if (Type.TEXT != type && Utilities.checkBlank(uri)){
+            throw new IllegalArgumentException("Uri must be provided for non text type.");
+        }
     }
+
     /* Converts a string representation of a type
      * to the correct enum.
      * @param typeStr - The string representation of the date.
@@ -45,8 +59,9 @@ public class Thought {
                 return Type.AUDIO;
             case "Picture":
                 return Type.PICTURE;
+            default:
+                throw new IllegalArgumentException("The text type does not match an enumerated type.");
         }
-        return Type.TEXT;
     }
 
     Long getDateInMS() {
