@@ -22,6 +22,7 @@ public class ThoughtTest {
         Thought thoughtTimeNegative = new Thought(-1L, "Not a real time",
                 Type.AUDIO, "android/3gp");
     }
+    /* You should not able to have a thought that is in the future. */
     @Test (expected = IllegalArgumentException.class)
     public void thoughtTimeGreaterThanToday() {
         Thought thoughtTimeGreaterThanToday = new Thought(Utilities.getTomorrow(), "Not a real time",
@@ -32,6 +33,7 @@ public class ThoughtTest {
         Thought thoughtTimeGreaterThanToday = new Thought(100000000L, "Not a real time",
                 "Audi", "android/3gp");
     }
+    /* This test should fail because it is illegal to have a non text type with no uri. */
     @Test (expected = IllegalArgumentException.class)
     public void nonTextTypeNoUri() {
         Thought thoughtTypeNonTextNoURI = new Thought(Utilities.getYesterday().getTime(),
@@ -53,10 +55,12 @@ public class ThoughtTest {
         noWhiteSpace = new Thought(Utilities.getYesterday(), "",
                 Type.TEXT, "");
     }
+    /* Test should be able to except todays date. */
     @Test
     public void todayDate(){
         Thought testTodaysDate = new Thought(new Date(), "Example thought.", Type.AUDIO, "android/audio.3gp");
     }
+    /* The thought type should map and this test should pass. */
     @Test
     public void thoughtStringTypeDoesMap(){
         Thought thoughtStringTypeDoesMap = new Thought(Utilities.getYesterday().getTime(), "Example thought.", "Audio", "android/audio.3gp");
@@ -66,6 +70,7 @@ public class ThoughtTest {
         thoughtStringTypeDoesMap = new Thought(Utilities.getYesterday().getTime(), "Example thought.", "Picture", "android/picture.jpg");
         assert (thoughtStringTypeDoesMap.getType() == Type.PICTURE);
     }
+    /* This is the lowest possible time in milliseconds. */
     @Test
     public void validTimeSet(){
         Thought thoughtTimeZero = new Thought(0L,"Example thought.", "Audio", "android/audio.3gp");
