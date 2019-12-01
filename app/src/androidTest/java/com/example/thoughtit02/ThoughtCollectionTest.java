@@ -10,14 +10,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Date;
 
-import static org.junit.Assert.assertEquals;
 
 //Todo: test add
 //Todo: test search
@@ -50,6 +45,10 @@ public class ThoughtCollectionTest {
     @Test
     public void canRedo() {
     }
+    /* Used only to check whether the thoughts are the same.
+     * @param thought1 - Thought to compare to.
+     * @param thought2 - Thought to compare against first.
+     * @return Returns true if the fields of the objects are the same. */
     public boolean isSameThought(Thought thought1, Thought thought2){
         if(thought1.getType() != thought2.getType()) return false;
         else if (!thought1.getThoughtText().equals(thought2.getThoughtText())) return false;
