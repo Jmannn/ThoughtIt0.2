@@ -25,7 +25,7 @@ public class ThoughtCollectionTest {
 
     @BeforeClass
     public static void setUp(){
-        thoughts = new ThoughtCollection(InstrumentationRegistry.getInstrumentation().getTargetContext());
+        thoughts = new ThoughtCollection(InstrumentationRegistry.getInstrumentation().getTargetContext(), "test_table");
         //generate the thoughts here, then test them coming out
     }
     @Before

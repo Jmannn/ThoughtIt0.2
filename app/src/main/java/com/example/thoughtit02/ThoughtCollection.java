@@ -44,12 +44,18 @@ class ThoughtCollection {
             return;
         }
         else if(redo.getType() == Type.PICTURE || redo.getType() == Type.AUDIO){
-            File file = new File(redo.getUri());
-            boolean deleted = file.delete();
-            if(!deleted){
-                ((MainActivity)context).toastMessage("file: "+redo.getUri()
-                        +" could not be deleted.");
-            }
+            removeFile(redo.getUri());
+        }
+    }
+    /* This method removes a file from file storage.
+     * @param filepath - This is the filepath to the file to remove.
+     * @return True if file is successfully removed.
+     */
+    private void removeFile(String filepath){
+        File file = new File(redo.getUri());
+        if(!file.delete()){
+            ((MainActivity)context).toastMessage("file: "+filepath
+                    +" could not be deleted.");
         }
     }
     /* Performs the operation to re add the thought back
@@ -74,12 +80,23 @@ class ThoughtCollection {
     }
     /* Constructor creates a databasehelper object using main activity context.
      * @param context - The main activity context.
+     * @param dbTableName - Allows you to specify a database tablename. Mostly for testing.
+     */
+    ThoughtCollection(Context context, String dbTableName) {
+        this.context = context;
+        this.mDatabaseHelper = new DatabaseHelper(context, dbTableName);
+        this.currentSelectedThoughts = new ArrayList<>();
+    }
+    /* Constructor creates a databasehelper object using main activity context.
+     * @param context - The main activity context.
+     * @param dbTabName - Allows you to specify a database tablename. Mostly for testing.
      */
     ThoughtCollection(Context context) {
         this.context = context;
         this.mDatabaseHelper = new DatabaseHelper(context);
         this.currentSelectedThoughts = new ArrayList<>();
     }
+
     /* Adds a thought to both the display arraylist currentSelectedThoughts and
      * the database.
      * @param thought - The thought object to add.
@@ -190,6 +207,7 @@ class ThoughtCollection {
     void clearThoughts(){
         mDatabaseHelper.clearDatabase();
         this.currentSelectedThoughts.clear();
+        //TODO: This needs to clear from the actual filesystem as well.
     }
 
 

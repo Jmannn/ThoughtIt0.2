@@ -15,7 +15,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /* Class tag for log. */
     private static final String TAG = "DatabaseHelper";
     /* The table name in database. */
-    private static final String TABLE_NAME = "thought_log_table";
+    private static String TABLE_NAME;
     /* Names of the columns of table. */
     private static final String COL1 = "date_ms";
     private static final String COL2 = "thought";
@@ -24,9 +24,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /* Activity context. */
     private Context context;
 
-    DatabaseHelper(Context context){
+    DatabaseHelper(Context context, String tableName){
         super(context,TABLE_NAME,null,1);
         this.context = context;
+        this.TABLE_NAME = tableName;
+    }
+    DatabaseHelper(Context context){
+        this(context, "thought_log_table");
     }
 
     /* Prepares table creation query then creates table in the
@@ -35,8 +39,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String createTable = context.getString(R.string.CreateTableSQL)+TABLE_NAME+ " ("+COL1+context.getString(R.string.IntPrimaryKeySQL) +
-                context.getString(R.string.AutoIncrementSQL) + COL2 + " TEXT,"+ COL3 + " TEXT,"+ COL4 + " TEXT)";
+        String createTable = context.getString(R.string.CreateTableSQL)+" "+TABLE_NAME+ " ("+COL1+" "+context.getString(R.string.IntPrimaryKeySQL)+" " +
+                context.getString(R.string.AutoIncrementSQL) +" "+ COL2 + " TEXT,"+ COL3 + " TEXT,"+ COL4 + " TEXT)";
         db.execSQL(createTable);
     }
     /* Upgrades the table.
