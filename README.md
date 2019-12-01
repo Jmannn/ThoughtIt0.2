@@ -12,3 +12,7 @@ target sdk. I personnaly used Android Studio so I can only suggest running it th
 ### Install
 -Clone the repo and import the project into Android Studio.
 -Deploy the project onto an emulator or hardware device.
+## Testing 
+To test this app, it is recomended that you have hardware or an emulator set up.
+Some of these tests can be run purely on the Java Virtual Machine and are quick to run. The rest, however, 
+are instrumented and therefore must be run on Android OS.
