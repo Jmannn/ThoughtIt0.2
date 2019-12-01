@@ -26,6 +26,7 @@ public class ThoughtCollectionTest {
     @BeforeClass
     public static void setUp(){
         thoughts = new ThoughtCollection(InstrumentationRegistry.getInstrumentation().getTargetContext());
+        //generate the thoughts here, then test them coming out
     }
     @Before
     public void databaseClear(){
@@ -39,7 +40,7 @@ public class ThoughtCollectionTest {
         thoughts.clearDisplay();
         thoughts.prepareDataSet(Utilities.getYesterday(), today);
         assert(isSameThought(testThought, thoughts.getThought(0)));
-
+        thoughts.clearThoughts();
     }
 
     @Test

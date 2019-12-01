@@ -54,9 +54,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     void clearDatabase() {
         SQLiteDatabase db;
         db = this.getWritableDatabase();
-        String clearDBQuery = context.getString(R.string.SQLDelete)+TABLE_NAME;
         db.delete(TABLE_NAME, null, null);
-        db.execSQL(clearDBQuery);
     }
     /* Adds a row of data to a table.
      * @param the date in ms
