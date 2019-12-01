@@ -10,6 +10,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -199,11 +202,39 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
             case R.id.clear:{
-                this.thoughtCollection.clearThoughts();
-                this.adaptor.notifyDataSetChanged();
+                clearAlertDialog();
             }
         }
         return super.onOptionsItemSelected(item);
+    }
+    /* This method should be called whenever a user would like to
+       remove any thoughts from the database. This method prompts them
+       giving them time to decide and preventing accidental deletes.
+     */
+    public void clearAlertDialog() {
+        // setup the alert builder
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Delete All Thoughts!");
+        builder.setMessage("Are you sure you would like to delete all thoughts?");
+
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                clearThoughts();
+            }
+        });
+
+        builder.setNegativeButton("Cancel", null);
+
+        // create and show the alert dialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+    /* This clears the thoughts from the thought collection and then notifies
+     * the recyclerview.
+     */
+    public void clearThoughts(){
+        this.thoughtCollection.clearThoughts();
+        this.adaptor.notifyDataSetChanged();
     }
     /* This listener waits for activities CalendarView, Camera, or Audio record to return.
      * It then adds the thought to the database and updates recyclerview. If it is calendarview,
