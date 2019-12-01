@@ -152,6 +152,12 @@ class ThoughtCollection {
                     cursor.getString(1),cursor.getString(2), cursor.getString(3)));
         }
     }
+    /* This method will simply clear everything from the
+     * thought list but will not delete from the Database.
+     */
+    public void clearDisplay(){
+        this.currentSelectedThoughts.clear();
+    }
     /* Prepares and executes a database query which returns
      * results within the date range specified.
      * @param lower - The minimum date allowed to be displayed.
