@@ -16,3 +16,7 @@ target sdk. I personnaly used Android Studio so I can only suggest running it th
 To test this app, it is recomended that you have hardware or an emulator set up.
 Some of these tests can be run purely on the Java Virtual Machine and are quick to run. The rest, however, 
 are instrumented and therefore must be run on Android OS.
+## Future Features
+### Drawing Pad
+In order to make the app better at capturing ideas, I would like to implement some kind of
+basic drawing canvas for making simple diagrams. It will likely include very simple tools such as drawing lines.
