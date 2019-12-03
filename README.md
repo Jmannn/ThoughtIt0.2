@@ -1,0 +1,22 @@
+# ThoughtIt0.2
+This is a project to develop an app which allows someone to easily notate their thoughts.
+While this app is in no way intended to replace traditional note apps, it does aspire to be more convenient.
+The idea is that writing notess should be as easy as sending a text message or using a messaging app. Currently, this app
+contains search functions, photos, voice memos, and conveniant edit capabilities. The plan is to eventually include video,
+copy paste functionality, better test coverage, exporting, perhaps a desktop client (linux/windows).
+## Getting Started
+Here are some of the details to get this project running on your device.
+### Prerequisites
+You will need to be running a copy of Android Studio and be running an sdk version of 15 or greater with 28 being the 
+target sdk. I personnaly used Android Studio so I can only suggest running it that IDE.
+### Install
+-Clone the repo and import the project into Android Studio.
+-Deploy the project onto an emulator or hardware device.
+## Testing 
+To test this app, it is recomended that you have hardware or an emulator set up.
+Some of these tests can be run purely on the Java Virtual Machine and are quick to run. The rest, however, 
+are instrumented and therefore must be run on Android OS.
+## Future Features
+### Drawing Pad
+In order to make the app better at capturing ideas, I would like to implement some kind of
+basic drawing canvas for making simple diagrams. It will likely include very simple tools such as drawing lines.
