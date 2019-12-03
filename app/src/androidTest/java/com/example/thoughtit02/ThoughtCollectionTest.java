@@ -34,6 +34,7 @@ public class ThoughtCollectionTest {
     @BeforeClass
     public static void setUp(){
         thoughtsCollection = new ThoughtCollection(InstrumentationRegistry.getInstrumentation().getTargetContext(), "test_table");
+        thoughtsCollection.clearThoughts();
         //generate the thoughts here, then test them coming out
     }
     @Before
@@ -47,6 +48,10 @@ public class ThoughtCollectionTest {
         thoughtsCollection.addThought(testThought);
         thoughtsCollection.clearDisplay();
         thoughtsCollection.prepareDataSet(Utilities.getYesterday(), today);
+        Log.e("DEBG", " : : "+testThought.getThoughtText()+" "+testThought.getDateInMS());
+        Log.e("DEBG", " :+: "+thoughtsCollection.getThought(0).getThoughtText()+" "+thoughtsCollection.getThought(0).getDateInMS());
+        System.out.println("sdfsdfsdf");
+        System.err.println("sdffsdfsdfs");
         assertTrue(isSameThought(testThought, thoughtsCollection.getThought(0)));
         thoughtsCollection.clearThoughts();
     }
@@ -62,7 +67,8 @@ public class ThoughtCollectionTest {
         thoughtsCollection.prepareDataSet(new Date(0), new Date());
         lastThought = thoughtsCollection.getThought(0);
         for(int i = 1; i < thoughtsCollection.getDisplaySize(); ++i){
-            assertTrue(thoughtsCollection.getThought(i).getDateInMS() < lastThought.getDateInMS());
+            assertTrue(thoughtsCollection.getThought(i).getDateInMS() > lastThought.getDateInMS());
+            lastThought = thoughtsCollection.getThought(i);
         }
         thoughtsCollection.clearThoughts();
     }
@@ -78,7 +84,8 @@ public class ThoughtCollectionTest {
         thoughtsCollection.prepareDataSet(new Date(0), new Date());
         lastThought = thoughtsCollection.getThought(0);
         for(int i = 1; i < thoughtsCollection.getDisplaySize(); ++i){
-            assertTrue(thoughtsCollection.getThought(i).getDateInMS() < lastThought.getDateInMS());
+            assertTrue(thoughtsCollection.getThought(i).getDateInMS() > lastThought.getDateInMS());
+            lastThought = thoughtsCollection.getThought(i);
         }
         thoughtsCollection.clearThoughts();
     }
@@ -100,15 +107,18 @@ public class ThoughtCollectionTest {
     @Test
     public void canRedo() {
     }
-    /* Used only to check whether the thoughts are the same.
+    /* Used only to check whether the thoughts are the same. Uses a millisecond
+     * threshold to because the date can be changed if there is a collision in the
+     * database.
      * @param thought1 - Thought to compare to.
      * @param thought2 - Thought to compare against first.
      * @return Returns true if the fields of the objects are the same. */
     public boolean isSameThought(Thought thought1, Thought thought2){
+        final int msThreshold = 10;
         if(thought1.getType() != thought2.getType()) return false;
         else if (!thought1.getThoughtText().equals(thought2.getThoughtText())) return false;
-        else if (thought1.getDateInMS() != thought2.getDateInMS()) return false;
-        else if (thought1.getUri() != thought2.getUri()) return false;
+        else if (Math.abs(thought1.getDateInMS() - thought2.getDateInMS()) > msThreshold) return false;
+        else if (!thought1.getUri().equals(thought2.getUri())) return false;
         return true;
     }
     /* This method fills the model with a bunch of consecutively occurring thoughts.
