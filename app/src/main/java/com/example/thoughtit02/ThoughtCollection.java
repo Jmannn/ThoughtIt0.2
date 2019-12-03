@@ -2,6 +2,8 @@ package com.example.thoughtit02;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.os.SystemClock;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -98,25 +100,40 @@ class ThoughtCollection {
     }
 
     /* Adds a thought to both the display arraylist currentSelectedThoughts and
-     * the database.
+     * the database. This does need wait a millisecond before adding to insure
+     * a unique time value.
      * @param thought - The thought object to add.
      * @return whether it was successfully added.
      */
     boolean addThought(Thought thought) {
         this.currentSelectedThoughts.add(thought);
-        boolean insertData;
+        boolean insertData = false;
         String thoughtText = thought.getThoughtText();
         Long date = thought.getDateInMS();
         String uri = thought.getUri();
 
-        if (thought.getType() == Type.PICTURE) {
-            insertData = mDatabaseHelper.addData(date, thoughtText, "Picture", uri);
-        } else if (thought.getType() == Type.AUDIO) {
-            insertData = mDatabaseHelper.addData(date, thoughtText, "Audio", uri);
-        } else {
-            insertData = mDatabaseHelper.addData(date, thoughtText, "Text", uri);
+        final int totalAttempts = 2;
+        int attemptsCount = 0;
+        while(!insertData && attemptsCount < totalAttempts) {
+            if (thought.getType() == Type.PICTURE) {
+                insertData = mDatabaseHelper.addData(date, thoughtText, "Picture", uri);
+            } else if (thought.getType() == Type.AUDIO) {
+                insertData = mDatabaseHelper.addData(date, thoughtText, "Audio", uri);
+            } else {
+                insertData = mDatabaseHelper.addData(date, thoughtText, "Text", uri);
+            }
+            if(!insertData){
+                ++attemptsCount;
+                thought.resetDate();
+                date = thought.getDateInMS();
+            }
         }
         return insertData;
+    }
+    /* This method returns the newest thought in the display.
+     * @return The news thought added. */
+    private Thought getLatest(){
+        return this.currentSelectedThoughts.get(this.getDisplaySize()-1);
     }
     /* Returns a thought at a given position in the currentSelectedThoughts arraylist.
      * @param position - The position to retrieve the thought from.

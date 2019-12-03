@@ -67,7 +67,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * @param the uri as a string
      * @return successfully added
      */
-    boolean addData(Long date, String thought, String type, String url){
+    boolean addData(Long date, String thought, String type, String url) {
         SQLiteDatabase db;
         ContentValues contentValues;
         db = this.getWritableDatabase();

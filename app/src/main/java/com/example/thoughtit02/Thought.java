@@ -61,6 +61,10 @@ public class Thought {
         }
     }
 
+    public void resetDate() {
+        this.dateInMS = new Date().getTime();
+    }
+
     /* Converts a string representation of a type
      * to the correct enum.
      * @param typeStr - The string representation of the date.
