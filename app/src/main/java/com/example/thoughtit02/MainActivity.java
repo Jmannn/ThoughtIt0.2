@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -420,14 +419,14 @@ public class MainActivity extends AppCompatActivity {
     }
     /* Adds back a previously removed thought. */
     public void redo(){
-        if (!this.thoughtCollection.canRedo()){
+        boolean redo = this.thoughtCollection.redo();
+        if(redo) {
+            Snackbar snackbar = Snackbar.make(constraintLayout, "Undo Success", Snackbar.LENGTH_SHORT);
+            snackbar.show();
+            this.adaptor.notifyItemInserted(this.thoughtCollection.getRedoPosition());
+        } else {
             toastMessage("Nothing to redo!");
-            return;
         }
-        this.thoughtCollection.redo();
-        Snackbar snackbar = Snackbar.make(constraintLayout, "Undo Success",Snackbar.LENGTH_SHORT);
-        snackbar.show();
-        this.adaptor.notifyItemInserted(this.thoughtCollection.getRedoPosition());
     }
     /* Shows a message to the user.
      * @param the text to display

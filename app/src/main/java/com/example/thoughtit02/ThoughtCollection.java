@@ -63,7 +63,8 @@ class ThoughtCollection {
     /* Performs the operation to re add the thought back
      * into the database, and the thoughts to display.
      */
-    void redo(){
+    boolean redo(){
+        if (!canRedo()) return false;
         this.currentSelectedThoughts.add(redoPosition, redo);
         String dataType = "";
         switch (redo.getType()){
@@ -79,6 +80,7 @@ class ThoughtCollection {
         }
         this.mDatabaseHelper.addData(redo.getDateInMS(), redo.getThoughtText(), dataType, redo.getUri());
         this.redo = null;
+        return true;
     }
     /* Constructor creates a databasehelper object using main activity context.
      * @param context - The main activity context.

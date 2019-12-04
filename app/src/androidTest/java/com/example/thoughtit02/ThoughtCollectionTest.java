@@ -1,9 +1,5 @@
 package com.example.thoughtit02;
 
-
-import android.os.SystemClock;
-import android.util.Log;
-
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
@@ -13,7 +9,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -21,10 +16,8 @@ import java.util.Random;
 
 import static junit.framework.TestCase.assertTrue;
 
-
-//Todo: test add
-//Todo: test all possible inputs and outputs
-//Todo: test search, incl empty string, numbers, normal, do a couple that test how many it find
+//Todo: test redo
+//Todo: test update thought
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class ThoughtCollectionTest {
@@ -33,8 +26,8 @@ public class ThoughtCollectionTest {
 
     @BeforeClass
     public static void setUp(){
-        thoughtsCollection = new ThoughtCollection(InstrumentationRegistry.getInstrumentation().getTargetContext(), "test_table");
-        //generate the thoughts here, then test them coming out
+        thoughtsCollection = new ThoughtCollection(InstrumentationRegistry.getInstrumentation().
+                getTargetContext(), "test_table");
     }
     @Before
     public void databaseClear(){
@@ -47,12 +40,7 @@ public class ThoughtCollectionTest {
         thoughtsCollection.addThought(testThought);
         thoughtsCollection.clearDisplay();
         thoughtsCollection.prepareDataSet(Utilities.getYesterday(), today);
-        Log.e("DEBG", " : : "+testThought.getThoughtText()+" "+testThought.getDateInMS());
-        Log.e("DEBG", " :+: "+thoughtsCollection.getThought(0).getThoughtText()+" "+thoughtsCollection.getThought(0).getDateInMS());
-        System.out.println("sdfsdfsdf");
-        System.err.println("sdffsdfsdfs");
         assertTrue(isSameThought(testThought, thoughtsCollection.getThought(0)));
-
     }
     /* The correct order should be the order of the dates in ascending order so
      * each following date retrieved should be greater than the last.
@@ -91,18 +79,74 @@ public class ThoughtCollectionTest {
      * clash.
      */
     @Test
-    public void testAllThoughtsAdded(){
-        Thought lastThought;
-        int numberToAdd = 100;
+    public void testThatAllThoughtsAdded(){
+        final int numberToAdd = 100, lowestTime = 0;
+
         fillModelConsecutive(thoughtsCollection, numberToAdd);
         thoughtsCollection.clearDisplay();
-        thoughtsCollection.prepareDataSet(new Date(0), new Date());
+        thoughtsCollection.prepareDataSet(new Date(lowestTime), new Date());
         assertTrue(thoughtsCollection.getDisplaySize() == numberToAdd);
     }
+    /* This test checks whether an empty search string to show every of the entries
+     * in the correct order.
+     */
+    @Test
+    public void searchThoughtsEmptySearchString(){
+        List<Thought> thoughtsToCheck = new ArrayList<>();
+        thoughtsToCheck.add(new Thought(new Date(), "ExampleTest", Type.TEXT, "file/sart.smg"));
+        thoughtsToCheck.add(new Thought(new Date(), "ExampleTest1", Type.AUDIO, "file/smar.smeg"));
+        thoughtsToCheck.add(new Thought(new Date(), "ExampleTest2", Type.PICTURE, "file/smat.smga"));
+        for(Thought thought : thoughtsToCheck){
+            thoughtsCollection.addThought(thought);
+        }
+        thoughtsCollection.clearDisplay();
+        thoughtsCollection.searchAndDisplay("");
+        for (int i = 0 ; i < thoughtsCollection.getDisplaySize(); i++){
+            assertTrue(isSameThought(thoughtsCollection.getThought(i),thoughtsToCheck.get(i)));
+        }
+    }
+    /* Search model for a substring and display all results that contain this substring. */
+    @Test
+    public void searchSubstring(){
+        List<Thought> thoughtsToCheck = new ArrayList<>();
+        List<Thought> thoughtsToAdd = new ArrayList<>();
 
+        thoughtsToCheck.add(new Thought(new Date(), "prefixExampleTest2", Type.PICTURE, "file/smat.smga"));
+        thoughtsToCheck.add(new Thought(new Date(), "ExampleTest1", Type.AUDIO, "file/smar.smeg"));
+        thoughtsToCheck.add(new Thought(new Date(), "Example", Type.TEXT, "file/sart.smg"));
+
+        thoughtsToAdd.add(new Thought(new Date(), "prefixExleTest2", Type.PICTURE, "file/smat.smga"));
+        thoughtsToAdd.add(thoughtsToCheck.get(0));
+        thoughtsToAdd.add(new Thought(new Date(), "pre", Type.AUDIO, "file/sat.smga"));
+        thoughtsToAdd.add(thoughtsToCheck.get(1));
+        thoughtsToAdd.add(new Thought(new Date(), "prefixExeTest2", Type.TEXT, "file/smat.smga"));
+        thoughtsToAdd.add(thoughtsToCheck.get(2));
+
+        for(Thought thought : thoughtsToAdd){
+            thoughtsCollection.addThought(thought);
+        }
+        thoughtsCollection.clearDisplay();
+        thoughtsCollection.searchAndDisplay("Example");
+
+        for (int i = 0 ; i < thoughtsCollection.getDisplaySize(); i++){
+            assertTrue(isSameThought(thoughtsCollection.getThought(i),thoughtsToCheck.get(i)));
+        }
+    }
+    /* This test should add a thought, remove it, then try and redo it. */
     @Test
     public void canRedoPass() {
+        Thought thoughtToRedo;
+        thoughtsCollection.addThought(new Thought(new Date(), "prefixExampleTest2", Type.PICTURE, "file/smat.smga"));
+        thoughtsCollection.addThought(new Thought(new Date(), "ExampleTest1", Type.AUDIO, "file/smar.smeg"));
+        thoughtsCollection.addThought(new Thought(new Date(), "Example", Type.TEXT, "file/sart.smg"));
+
+        thoughtToRedo = thoughtsCollection.getThought(1);
+        thoughtsCollection.removeThought(1);
+        thoughtsCollection.redo();
+
+        assertTrue(isSameThought(thoughtsCollection.getThought(1), thoughtToRedo));
     }
+    /* This test should try to redo a thought but there will be nothing to redo. */
     @Test
     public void canRedoFail(){
 
@@ -132,7 +176,6 @@ public class ThoughtCollectionTest {
         Type typeChosen;
         for (int i = 0; i < numberToGenerate; ++i){
             typeChosen = types[random.nextInt(types.length)];
-            //SystemClock.sleep(1);//Needs to sleep otherwise date will cause clash
             if(typeChosen == Type.TEXT) {
                 thoughtCollection.addThought(new Thought(new Date(), "Basic thought", typeChosen, ""));
             } else {
@@ -152,7 +195,6 @@ public class ThoughtCollectionTest {
         int thoughtChoice;
         for (int i = 0; i < numberToGenerate; ++i){
             typeChosen = types[random.nextInt(types.length)];
-            //SystemClock.sleep(1);
             if(typeChosen == Type.TEXT) {
                 thoughts.add(new Thought(new Date(), "Basic thought", typeChosen, ""));
             } else {
