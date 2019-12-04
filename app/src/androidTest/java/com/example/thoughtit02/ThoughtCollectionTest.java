@@ -16,7 +16,6 @@ import java.util.Random;
 
 import static junit.framework.TestCase.assertTrue;
 
-//Todo: test redo
 //Todo: test update thought
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -136,22 +135,43 @@ public class ThoughtCollectionTest {
     @Test
     public void canRedoPass() {
         Thought thoughtToRedo;
+        int size;
         thoughtsCollection.addThought(new Thought(new Date(), "prefixExampleTest2", Type.PICTURE, "file/smat.smga"));
         thoughtsCollection.addThought(new Thought(new Date(), "ExampleTest1", Type.AUDIO, "file/smar.smeg"));
         thoughtsCollection.addThought(new Thought(new Date(), "Example", Type.TEXT, "file/sart.smg"));
-
+        size = thoughtsCollection.getDisplaySize();
         thoughtToRedo = thoughtsCollection.getThought(1);
         thoughtsCollection.removeThought(1);
+        assertTrue(thoughtsCollection.getDisplaySize() == size -1);
         thoughtsCollection.redo();
-
         assertTrue(isSameThought(thoughtsCollection.getThought(1), thoughtToRedo));
     }
-    /* This test should try to redo a thought but there will be nothing to redo. */
+    /* This test should try to redo a thought but there will be nothing to redo. Note
+     * that a prior bug meant that even after clear, it still had a thought it could redo.
+     * This test is designed to catch that.  */
     @Test
     public void canRedoFail(){
-
+        int size;
+        thoughtsCollection.addThought(new Thought(new Date(), "prefixExampleTest2", Type.PICTURE, "file/smat.smga"));
+        thoughtsCollection.addThought(new Thought(new Date(), "ExampleTest1", Type.AUDIO, "file/smar.smeg"));
+        thoughtsCollection.addThought(new Thought(new Date(), "Example", Type.TEXT, "file/sart.smg"));
+        size = thoughtsCollection.getDisplaySize();
+        thoughtsCollection.redo();
+        assertTrue(thoughtsCollection.getDisplaySize() == size);
     }
-
+    /* This test should check if a thought is updated correctly. */
+    @Test
+    public void canUpdate(){
+        String updatedString = "UpdateExample";
+        int posToCheck = 2;
+        thoughtsCollection.addThought(new Thought(new Date(), "prefixExampleTest2", Type.PICTURE, "file/smat.smga"));
+        thoughtsCollection.addThought(new Thought(new Date(), "ExampleTest1", Type.AUDIO, "file/smar.smeg"));
+        thoughtsCollection.addThought(new Thought(new Date(), "Example", Type.TEXT, "file/sart.smg"));
+        thoughtsCollection.updateThought(posToCheck, updatedString);
+        thoughtsCollection.clearDisplay();
+        thoughtsCollection.searchAndDisplay("");
+        assertTrue(thoughtsCollection.getThought(posToCheck).getThoughtText().equals(updatedString));
+    }
     /* Used only to check whether the thoughts are the same. Uses a millisecond
      * threshold to because the date can be changed if there is a collision in the
      * database.
@@ -184,7 +204,7 @@ public class ThoughtCollectionTest {
         }
     }
     /* Fills the model out of order. The model should return in order regardless.
-     * @param thoughtCollection - A reference to the thoughtcollection model.
+     * @param thoughtCollection - A reference to the thoughtCollection model.
      * @param numberToGenerate - This is the number of thoughts to generate before the test.
      */
     public void fillModelNotConsecutive(ThoughtCollection thoughtCollection, int numberToGenerate){

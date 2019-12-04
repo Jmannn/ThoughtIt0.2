@@ -224,8 +224,9 @@ class ThoughtCollection {
     }
     /* Clears the database, and clears the current selected thoughts. */
     void clearThoughts(){
-        mDatabaseHelper.clearDatabase();
+        this.mDatabaseHelper.clearDatabase();
         this.currentSelectedThoughts.clear();
+        this.redo = null;
         //TODO: This needs to clear from the actual filesystem as well.
     }
 
