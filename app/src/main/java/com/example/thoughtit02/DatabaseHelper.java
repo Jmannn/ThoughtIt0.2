@@ -80,6 +80,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         long result = db.insert(TABLE_NAME, null, contentValues);
         return !(result == -1);
     }
+    /* Should select the smallest value from the database.
+     * @return The smallest value as a cursor.  */
+    Cursor selectMin(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "select min("+COL1+") from "+TABLE_NAME;
+        return db.rawQuery(query, null);
+    }
+    /* Should select the largest value from the database.
+     * @return The largest value as a cursor.  */
+    Cursor selectMax(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "select max("+COL1+") from "+TABLE_NAME;
+        return db.rawQuery(query, null);
+    }
     /* Uses date in milliseconds to change to value of
      * column 2 which is the thought text.
      * @param updated thought text

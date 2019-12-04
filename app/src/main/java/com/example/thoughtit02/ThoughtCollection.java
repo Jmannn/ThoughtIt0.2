@@ -229,6 +229,22 @@ class ThoughtCollection {
         this.redo = null;
         //TODO: This needs to clear from the actual filesystem as well.
     }
+    /* This method should return the smallest date.
+     * @return The smallest date as number of milliseconds since 1970.
+     */
+    long smallestDate(){
+        Cursor cursor = mDatabaseHelper.selectMin();
+        cursor.moveToNext();
+        return cursor.getLong(0);
+    }
+    /* This method should return the largest date.
+     * @return The largest date as number of milliseconds since 1970.
+     */
+    long largestDate(){
+        Cursor cursor = mDatabaseHelper.selectMax();
+        cursor.moveToNext();
+        return cursor.getLong(0);
+    }
 
 
 }

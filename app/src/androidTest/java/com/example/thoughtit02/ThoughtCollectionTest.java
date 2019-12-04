@@ -1,5 +1,7 @@
 package com.example.thoughtit02;
 
+import android.os.SystemClock;
+
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
@@ -16,7 +18,6 @@ import java.util.Random;
 
 import static junit.framework.TestCase.assertTrue;
 
-//Todo: test update thought
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class ThoughtCollectionTest {
@@ -158,6 +159,27 @@ public class ThoughtCollectionTest {
         size = thoughtsCollection.getDisplaySize();
         thoughtsCollection.redo();
         assertTrue(thoughtsCollection.getDisplaySize() == size);
+    }
+    /* Checks that the max date being returned is indeed the last entered. */
+    @Test
+    public void testMaxDate(){
+        Thought max;
+        thoughtsCollection.addThought(new Thought(new Date(), "prefixExampleTest2", Type.PICTURE, "file/smat.smga"));
+        thoughtsCollection.addThought(new Thought(new Date(), "ExampleTest1", Type.AUDIO, "file/smar.smeg"));
+        SystemClock.sleep(10);
+        max = new Thought(new Date(), "Example", Type.TEXT, "file/sart.smg");
+        thoughtsCollection.addThought(max);
+        assertTrue(thoughtsCollection.largestDate() == max.getDateInMS());
+    }
+    /* Checks that the min date being returned is indeed the first entered. */
+    @Test
+    public void testMinDate(){
+        SystemClock.sleep(10);
+        Thought min = new Thought(new Date(), "prefixExampleTest2", Type.PICTURE, "file/smat.smga");
+        thoughtsCollection.addThought(min);
+        thoughtsCollection.addThought(new Thought(new Date(), "ExampleTest1", Type.AUDIO, "file/smar.smeg"));
+        thoughtsCollection.addThought(new Thought(new Date(), "Example", Type.TEXT, "file/sart.smg"));
+        assertTrue(thoughtsCollection.smallestDate() == min.getDateInMS());
     }
     /* This test should check if a thought is updated correctly. */
     @Test

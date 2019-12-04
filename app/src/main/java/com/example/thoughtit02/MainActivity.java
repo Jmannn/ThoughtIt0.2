@@ -118,9 +118,13 @@ public class MainActivity extends AppCompatActivity {
     /* Starts the calendar intent to allow the user to pick
      * a date.
      */
-    public void pickDate(){
+    public void pickDate(int requestCode, long lowerBound, long upperBound){
+        final String LOWER_BOUND_ID = "LOWER_DATE";
+        final String UPPER_BOUND_ID = "UPPER_DATE";
         Intent intent = new Intent(MainActivity.this, CalendarActivity.class);
-        startActivityForResult(intent, CALENDAR_REQUEST_CODE_LOWER_BOUND);
+        intent.putExtra(LOWER_BOUND_ID, lowerBound);
+        intent.putExtra(UPPER_BOUND_ID, upperBound);
+        startActivityForResult(intent, requestCode);
     }
     /* Prepares a file and opens up the camera so user can take a picture. */
     private void dispatchTakePictureIntent() {
@@ -188,7 +192,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.select_date_range:{
-                pickDate();
+                pickDate(CALENDAR_REQUEST_CODE_LOWER_BOUND, thoughtCollection.smallestDate(),
+                        thoughtCollection.largestDate());
                 break;
             }
             case R.id.set_current_date:{
@@ -236,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
     /* This listener waits for activities CalendarView, Camera, or Audio record to return.
      * It then adds the thought to the database and updates recyclerview. If it is calendarview,
      * it displays the dates chosen.
-     * @param The intent which is being recieved
+     * @param The intent which is being recieved.
      * @param Whether it was returned correctly
      */
     @Override
@@ -245,8 +250,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == CALENDAR_REQUEST_CODE_LOWER_BOUND && resultCode == Activity.RESULT_OK){
              long result=data.getLongExtra(getString(R.string.DateIntentID), -1);
              this.currentMinDisplayDate = new Date(result);
-             Intent intent = new Intent(MainActivity.this, CalendarActivity.class);
-             startActivityForResult(intent, CALENDAR_REQUEST_CODE_UPPPER_BOUND);
+             pickDate(CALENDAR_REQUEST_CODE_UPPPER_BOUND, result ,this.thoughtCollection.largestDate());
         } else if (requestCode == CALENDAR_REQUEST_CODE_UPPPER_BOUND && resultCode == Activity.RESULT_OK){
             long result=data.getLongExtra(getString(R.string.DateIntentID), -1);
             this.currentMaxDisplayDate = new Date(result);
