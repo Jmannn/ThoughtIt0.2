@@ -146,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
     /* Reinitializes the displayed information, as well as the MediaPlayer. */
     @Override
     public void onResume(){
+        final int start = 0;
         super.onResume();
         Log.d(TAG,"RESUME");
         this.adaptor = null;
@@ -162,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
         this.mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                mediaPlayer.seekTo(0);
+                mediaPlayer.seekTo(start);
             }
 
         });
@@ -284,11 +285,14 @@ public class MainActivity extends AppCompatActivity {
     /* A runnable used to update the seekbars in recycler view.
      * Converts elapsed time and total time of media player to a percentage.*/
     private Runnable updateSeekBarTime = new Runnable() {
-        double newBarPosition = 0;
+        final int delayUpdateTimeMS = 1000;
+        final int oneHundredPercent = 100;
+        double newBarPosition;
         public void run() {
-            newBarPosition = ((double) mediaPlayer.getCurrentPosition() / (double) mediaPlayer.getDuration()) * 100;
+            newBarPosition = ((double) mediaPlayer.getCurrentPosition()
+                    / (double) mediaPlayer.getDuration()) * oneHundredPercent;
             adaptor.notifyItemChanged(currentAudioPosition , (int)newBarPosition);
-            seekHandler.postDelayed(updateSeekBarTime, 1000);
+            seekHandler.postDelayed(updateSeekBarTime, delayUpdateTimeMS);
         }
     };
     /* This initiates the process of playing a recording, or it continues playing a
@@ -335,11 +339,12 @@ public class MainActivity extends AppCompatActivity {
     }
     /* Pauses the recording and sets elapsed time at 0. */
     public void stopRecording(){
+        final int beginningMS = 0;
         if( mediaPlayer.isPlaying()) {
             this.mediaPlayer.pause();
-            this.mediaPlayer.seekTo(0);
-        } else if (mediaPlayer.getCurrentPosition()>0){
-            this.mediaPlayer.seekTo(0);
+            this.mediaPlayer.seekTo(beginningMS);
+        } else if (mediaPlayer.getCurrentPosition()>beginningMS){
+            this.mediaPlayer.seekTo(beginningMS);
         }
     }
     /* Initializes thoughts and then starts the RecyclerView.*/
