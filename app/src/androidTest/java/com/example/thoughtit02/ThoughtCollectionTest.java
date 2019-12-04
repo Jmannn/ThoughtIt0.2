@@ -23,8 +23,8 @@ import static junit.framework.TestCase.assertTrue;
 
 
 //Todo: test add
-//Todo: test search
 //Todo: test all possible inputs and outputs
+//Todo: test search, incl empty string, numbers, normal, do a couple that test how many it find
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class ThoughtCollectionTest {
@@ -34,12 +34,11 @@ public class ThoughtCollectionTest {
     @BeforeClass
     public static void setUp(){
         thoughtsCollection = new ThoughtCollection(InstrumentationRegistry.getInstrumentation().getTargetContext(), "test_table");
-        thoughtsCollection.clearThoughts();
         //generate the thoughts here, then test them coming out
     }
     @Before
     public void databaseClear(){
-
+        thoughtsCollection.clearThoughts();
     }
     @Test
     public void addThoughts() {
@@ -53,7 +52,7 @@ public class ThoughtCollectionTest {
         System.out.println("sdfsdfsdf");
         System.err.println("sdffsdfsdfs");
         assertTrue(isSameThought(testThought, thoughtsCollection.getThought(0)));
-        thoughtsCollection.clearThoughts();
+
     }
     /* The correct order should be the order of the dates in ascending order so
      * each following date retrieved should be greater than the last.
@@ -70,7 +69,6 @@ public class ThoughtCollectionTest {
             assertTrue(thoughtsCollection.getThought(i).getDateInMS() > lastThought.getDateInMS());
             lastThought = thoughtsCollection.getThought(i);
         }
-        thoughtsCollection.clearThoughts();
     }
     /* The correct order should be the order of the dates in ascending order so
      * each following date retrieved should be greater than the last.
@@ -87,7 +85,6 @@ public class ThoughtCollectionTest {
             assertTrue(thoughtsCollection.getThought(i).getDateInMS() > lastThought.getDateInMS());
             lastThought = thoughtsCollection.getThought(i);
         }
-        thoughtsCollection.clearThoughts();
     }
     /* This test makes sure that each item was added. Previous error was that if
      * two dates added at same time then one would not added since its primary key would
@@ -101,12 +98,16 @@ public class ThoughtCollectionTest {
         thoughtsCollection.clearDisplay();
         thoughtsCollection.prepareDataSet(new Date(0), new Date());
         assertTrue(thoughtsCollection.getDisplaySize() == numberToAdd);
-        thoughtsCollection.clearThoughts();
     }
 
     @Test
-    public void canRedo() {
+    public void canRedoPass() {
     }
+    @Test
+    public void canRedoFail(){
+
+    }
+
     /* Used only to check whether the thoughts are the same. Uses a millisecond
      * threshold to because the date can be changed if there is a collision in the
      * database.

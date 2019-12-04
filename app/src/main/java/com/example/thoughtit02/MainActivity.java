@@ -55,15 +55,12 @@ public class MainActivity extends AppCompatActivity {
     private Date currentMinDisplayDate;
     /* The current minimum date being displayed. */
     private Date currentMaxDisplayDate;
-    /* A toggle boolean used by intent receiver to determine
-     * whether a date has been selected.
-     */
-    private boolean selectMaxDate = false;
     /* The layout containing the main GUI. */
     private ConstraintLayout constraintLayout;
     /* Request ID for various intents. */
     static final int  CAMERA_REQUEST_CODE = 1;
-    static final int  CALENDAR_REQUEST_CODE = 2;
+    static final int  CALENDAR_REQUEST_CODE_LOWER_BOUND = 2;
+    private static final int CALENDAR_REQUEST_CODE_UPPPER_BOUND = 4;
     static final int  AUDIO_REQUEST_CODE = 3;
     /* Uri for pic returned by photo intent. */
     private Uri picUri;
@@ -124,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void pickDate(){
         Intent intent = new Intent(MainActivity.this, CalendarActivity.class);
-        startActivityForResult(intent, CALENDAR_REQUEST_CODE);
+        startActivityForResult(intent, CALENDAR_REQUEST_CODE_LOWER_BOUND);
     }
     /* Prepares a file and opens up the camera so user can take a picture. */
     private void dispatchTakePictureIntent() {
@@ -245,19 +242,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode == CALENDAR_REQUEST_CODE && resultCode == Activity.RESULT_OK){
+        if (requestCode == CALENDAR_REQUEST_CODE_LOWER_BOUND && resultCode == Activity.RESULT_OK){
              long result=data.getLongExtra(getString(R.string.DateIntentID), -1);
-             if(this.selectMaxDate){
-                 this.selectMaxDate = false;
-                 this.currentMaxDisplayDate = new Date(result);
-                 this.thoughtCollection.prepareDataSet(this.currentMinDisplayDate, this.currentMaxDisplayDate);
-             } else {
-                 this.selectMaxDate = true;
-                 this.currentMinDisplayDate = new Date(result);
-                 pickDate();
-             }
-        }
-        else if(requestCode == CAMERA_REQUEST_CODE && resultCode == RESULT_OK){
+             this.currentMinDisplayDate = new Date(result);
+             Intent intent = new Intent(MainActivity.this, CalendarActivity.class);
+             startActivityForResult(intent, CALENDAR_REQUEST_CODE_UPPPER_BOUND);
+        } else if (requestCode == CALENDAR_REQUEST_CODE_UPPPER_BOUND && resultCode == Activity.RESULT_OK){
+            long result=data.getLongExtra(getString(R.string.DateIntentID), -1);
+            this.currentMaxDisplayDate = new Date(result);
+            this.thoughtCollection.prepareDataSet(this.currentMinDisplayDate, this.currentMaxDisplayDate);
+        } else if(requestCode == CAMERA_REQUEST_CODE && resultCode == RESULT_OK){
             Date date = new Date();
             String thoughtText = this.editBox.getText().toString();
             Uri uri = picUri;
