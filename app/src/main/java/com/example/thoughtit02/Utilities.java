@@ -52,5 +52,19 @@ class Utilities {
         }
         return false;
     }
+    /* Used only to check whether the thoughts are the same. Uses a millisecond
+     * threshold to because the date can be changed if there is a collision in the
+     * database.
+     * @param thought1 - Thought to compare to.
+     * @param thought2 - Thought to compare against first.
+     * @return Returns true if the fields of the objects are the same. */
+    static public boolean isSameThought(Thought thought1, Thought thought2){
+        final int msThreshold = 10;
+        if(thought1.getType() != thought2.getType()) return false;
+        else if (!thought1.getThoughtText().equals(thought2.getThoughtText())) return false;
+        else if (Math.abs(thought1.getDateInMS() - thought2.getDateInMS()) > msThreshold) return false;
+        else if (!thought1.getUri().equals(thought2.getUri())) return false;
+        return true;
+    }
 
 }

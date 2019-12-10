@@ -16,6 +16,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import static com.example.thoughtit02.Utilities.getYesterday;
+import static com.example.thoughtit02.Utilities.isSameThought;
 import static junit.framework.TestCase.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
@@ -39,7 +41,7 @@ public class ThoughtCollectionTest {
         Thought testThought = new Thought(new Date(), "Just a mock test.", Type.TEXT, "");
         thoughtsCollection.addThought(testThought);
         thoughtsCollection.clearDisplay();
-        thoughtsCollection.prepareDataSet(Utilities.getYesterday(), today);
+        thoughtsCollection.prepareDataSet(getYesterday(), today);
         assertTrue(isSameThought(testThought, thoughtsCollection.getThought(0)));
     }
     /* The correct order should be the order of the dates in ascending order so
@@ -194,20 +196,7 @@ public class ThoughtCollectionTest {
         thoughtsCollection.searchAndDisplay("");
         assertTrue(thoughtsCollection.getThought(posToCheck).getThoughtText().equals(updatedString));
     }
-    /* Used only to check whether the thoughts are the same. Uses a millisecond
-     * threshold to because the date can be changed if there is a collision in the
-     * database.
-     * @param thought1 - Thought to compare to.
-     * @param thought2 - Thought to compare against first.
-     * @return Returns true if the fields of the objects are the same. */
-    public boolean isSameThought(Thought thought1, Thought thought2){
-        final int msThreshold = 10;
-        if(thought1.getType() != thought2.getType()) return false;
-        else if (!thought1.getThoughtText().equals(thought2.getThoughtText())) return false;
-        else if (Math.abs(thought1.getDateInMS() - thought2.getDateInMS()) > msThreshold) return false;
-        else if (!thought1.getUri().equals(thought2.getUri())) return false;
-        return true;
-    }
+
     /* This method fills the model with a bunch of consecutively occurring thoughts.
      * @param thoughtCollection - A reference to the thoughtcollection model.
      * @param numberToGenerate - This is the number of thoughts to generate before the test.
