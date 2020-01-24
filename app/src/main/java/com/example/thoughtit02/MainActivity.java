@@ -259,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
             Date date = new Date();
             String thoughtText = this.editBox.getText().toString();
             Uri uri = picUri;
-            Log.d("DEBG", "onActivityResult: "+date.getTime());
+            Log.d(TAG, "onActivityResult: "+date.getTime());
             Thought thought = new Thought(date, thoughtText, Type.PICTURE, uri.toString());
 
             this.thoughtCollection.addThought(thought);
